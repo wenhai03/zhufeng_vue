@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+</head>
+<body>
+<script src="/dist/umd/vue.js"></script>
+
+<script>
+  let vm = new Vue({
+    el: '#app',
+    data() {
+      return {a: {a:{a:1}}}
+    },
+    computed() {},
+    watch() {},
+  });
+
+
+
+
+ /* // 默认弄个数据会递归去用defineProperty进行拦截  性能差 => vue3 proxy
+  console.log('vm._data', vm._data.a.a.a);*/
+</script>
+</body>
+</html>
