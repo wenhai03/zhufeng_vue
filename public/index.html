@@ -11,17 +11,15 @@
   let vm = new Vue({
     el: '#app',
     data() {
-      return {a: {a:{a:1}}}
+      return {arr: [1,2,3]}
     },
     computed() {},
     watch() {},
   });
-
-
-
-
- /* // 默认弄个数据会递归去用defineProperty进行拦截  性能差 => vue3 proxy
-  console.log('vm._data', vm._data.a.a.a);*/
+  // 开发功能是很少对数组索引进行操作，为了性能考虑不对数组进行拦截
+  // 拦截可以改变数组的方法进行操作
+  vm._data.arr.push({b: 1})
+  vm._data.arr[1].b = 100
 </script>
 </body>
 </html>
