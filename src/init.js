@@ -20,7 +20,6 @@ export function initMixin(Vue) {
   }
   
   Vue.prototype.$mount = function (el){
-    console.log(22, el)
     // 挂载操作
     const vm = this
     const options = vm.$options
