@@ -44,16 +44,32 @@
     };
   });
 
+  function proxy (vm, data, key) {
+    Object.defineProperty(vm, key, {
+      get () {
+        return vm[data][key] // vm._data.a
+      },
+      set(newValue){
+        vm[data][key] = newValue;
+      }
+    });
+  }
+
+  function defineProperty(target, key, value) {
+    Object.defineProperty(target, '__ob__', {
+      enumerable: false, // 不能被枚举，不能被循环出来
+      configurable: false,
+      value: value
+    });
+  }
+
   class Observer {
     constructor (value) {
       // 使用defineProperty重新定义属性
       
       // 判断一个对象是否被观测过看他有没有 __ob__这个属性
-      Object.defineProperty(value, '__ob__', {
-        enumerable: false, // 不能被枚举，不能被循环出来
-        configurable: false,
-        value: this
-      });
+      defineProperty(value, '__ob__', this);
+      
       if (Array.isArray(value)) {
         // 我希望调用push unshift splice reverse pop
         // 函数劫持 切片编程
@@ -112,11 +128,17 @@
 
   function initData (vm) {
     // 数据初始化工作
-    let data = vm.$options.data; // 用户传递的data
+    let data = vm.$options. data; // 用户传递的data
     vm._data = data = typeof data === 'function' ? data.call(vm) : data;
     // 对象劫持 用户改变了数据 我希望可以得到通知 => 刷新页面
     // MVVM模式 数据变化可以驱动视图变化
     // Object.defineProperty() 给属性增加get和set方法
+    
+    
+    // 当我去vm上取属性时，帮我将属性的取值代理到vm._data上
+    for (let key in data) {
+      proxy(vm, '_data', key);
+    }
     observe(data); // 响应式原理
     
   }

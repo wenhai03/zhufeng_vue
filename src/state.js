@@ -1,4 +1,5 @@
 import {observe} from "./observe/index"
+import {proxy} from "./util"
 
 function initProps (vm) {
 
@@ -8,13 +9,20 @@ function initMethod (vm) {
 
 }
 
+
 function initData (vm) {
   // 数据初始化工作
-  let data = vm.$options.data // 用户传递的data
+  let data = vm.$options. data // 用户传递的data
   vm._data = data = typeof data === 'function' ? data.call(vm) : data
   // 对象劫持 用户改变了数据 我希望可以得到通知 => 刷新页面
   // MVVM模式 数据变化可以驱动视图变化
   // Object.defineProperty() 给属性增加get和set方法
+  
+  
+  // 当我去vm上取属性时，帮我将属性的取值代理到vm._data上
+  for (let key in data) {
+    proxy(vm, '_data', key)
+  }
   observe(data) // 响应式原理
   
 }
