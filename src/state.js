@@ -1,4 +1,4 @@
-import {observe} from "./observe/index"
+import {observe} from "./observer/index"
 import {proxy} from "./util"
 
 export function initState (vm) {

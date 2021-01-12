@@ -1,5 +1,6 @@
 import {arrayProtoMethods} from "./array"
 import {defineProperty} from "../util"
+import Dep from "./dep"
 
 class Observer {
   constructor (value) {
@@ -13,7 +14,7 @@ class Observer {
       // 函数劫持 切片编程
       value.__proto__ = arrayProtoMethods
       // 观测数组中的对象类型，对象变化也要做一些事
-      this.observeArray(value ) // 数组中普通类型是不做类型观测的
+      this.observeArray(value) // 数组中普通类型是不做类型观测的
     } else {
       this.walk(value)
     }
@@ -24,32 +25,42 @@ class Observer {
       observe(item) // 观测数组中的对象类型
     })
   }
+  
   walk (data) {
     let keys = Object.keys(data) // 获取对象的key
-  
-    keys.forEach(key  => {
+    
+    keys.forEach(key => {
       defineReactive(data, key, data[key])
     })
   }
-
+  
 }
 
 // 封装 继承
 function defineReactive (data, key, value) {
   observe(value) // 如果是对象类型再进行观测(递归)
-  Object.defineProperty(data, key,{
-    get () {
+  
+  let dep = new Dep() // 每个属性都有一个dep
+  
+  // 当页面取值时 说明这个值用来渲染了，将这个watcher和这个属性对应起来
+  Object.defineProperty(data, key, {
+    get () { // 依赖收集
+      if (Dep.target) {
+        dep.depend()
+      }
+      
       return value
     },
-    set (newValue) {
+    set (newValue) { // 依赖更新
       if (newValue === value) return
       observe(newValue) // 如果用户将值改成对象继续监控
       value = newValue
+      dep.notify()
     }
   })
 }
 
-export function observe(data){
+export function observe (data) {
   // typeof null 也是 object
   // 不能不是对象 并且不是null
   if (typeof data !== 'object' || data == null) {

@@ -125,6 +125,30 @@
     return options
   }
 
+  class Dep{
+    constructor(){
+      this.subs = [];
+    }
+    depend() {
+      this.subs.push(Dep.target);
+    }
+    notify() {
+      this.subs.forEach(watcher => watcher.update());
+    }
+  }
+
+  Dep.target = null; // 静态属性 就一份
+  function pushTarget(watcher){
+    Dep.target = watcher; // 保留watcher
+  }
+  function popTarget(){
+    Dep.target = null;  // 将变量删除掉
+  }
+
+  // 多对多的关系 一个属性一个dep是用来收集watcher的
+  // dep可以查查多个watcher
+  // 一个watcher可以对应多个dep
+
   class Observer {
     constructor (value) {
       // 使用defineProperty重新定义属性
@@ -137,7 +161,7 @@
         // 函数劫持 切片编程
         value.__proto__ = arrayProtoMethods;
         // 观测数组中的对象类型，对象变化也要做一些事
-        this.observeArray(value ); // 数组中普通类型是不做类型观测的
+        this.observeArray(value); // 数组中普通类型是不做类型观测的
       } else {
         this.walk(value);
       }
@@ -148,32 +172,42 @@
         observe(item); // 观测数组中的对象类型
       });
     }
+    
     walk (data) {
       let keys = Object.keys(data); // 获取对象的key
-    
-      keys.forEach(key  => {
+      
+      keys.forEach(key => {
         defineReactive(data, key, data[key]);
       });
     }
-
+    
   }
 
   // 封装 继承
   function defineReactive (data, key, value) {
     observe(value); // 如果是对象类型再进行观测(递归)
-    Object.defineProperty(data, key,{
-      get () {
+    
+    let dep = new Dep(); // 每个属性都有一个dep
+    
+    // 当页面取值时 说明这个值用来渲染了，将这个watcher和这个属性对应起来
+    Object.defineProperty(data, key, {
+      get () { // 依赖收集
+        if (Dep.target) {
+          dep.depend();
+        }
+        
         return value
       },
-      set (newValue) {
+      set (newValue) { // 依赖更新
         if (newValue === value) return
         observe(newValue); // 如果用户将值改成对象继续监控
         value = newValue;
+        dep.notify();
       }
     });
   }
 
-  function observe(data){
+  function observe (data) {
     // typeof null 也是 object
     // 不能不是对象 并且不是null
     if (typeof data !== 'object' || data == null) {
@@ -427,6 +461,7 @@
     parentElm.removeChild(oldVnode); // 删除老的节点
     
     // let el = createElm(vnode)
+    return el
   }
 
   function createElm (vnode) {
@@ -463,10 +498,48 @@
     
   }
 
+  let id = 0;
+
+  class Watcher {  // vm.$watch
+    // vm实例
+    // exprOrFn   vm._update(vm._render())
+    constructor(vm, exprOrFn, cb, options) {
+      this.vm = vm;
+      this.exprOrFn = exprOrFn;
+      this.cb = cb;
+      this.options = options;
+      this.id = id++; // watcher的唯一标识
+      
+      if (typeof exprOrFn === 'function') {
+        this.getter = exprOrFn;
+      }
+      
+      this.get(); // 默认会调用get方法
+    }
+    
+    get(){
+      // Dep.target = watcher
+      pushTarget(this); // 当前watcher实例
+      this.getter();  // 调用exprOrFn 渲染页面 取值（执行了get方法）render方法  with(vm){_v(msg)}
+      popTarget();
+    }
+    update() {
+      this.get(); // 重新渲染
+    }
+  }
+
+  // 在数据劫持的时候 定义defineProperty的时候 已经给每个属性都增加了一个dep
+
+  // 1.是想把这个渲染watcher放到了Dep.target属性上
+  // 2.开始渲染，取值会调用get方法，需要让这个属性的dep 存储当前的watcher
+  // 3.页面上所需要的属性都会将这个watcher存在增加的dep中
+  // 4.等会属性更新了，就重新调用渲染逻辑，通知自己存储的watcher来更新
+
   function lifecycleMixin (Vue) {
     Vue.prototype._update = function (vnode) {
       const vm = this;
-      patch(vm.$el, vnode);
+      // 用新创建的元素 替换老的vm.$el
+      vm.$el = patch(vm.$el, vnode);
       
     };
   }
@@ -474,8 +547,18 @@
   function mountComponent (vm, el) {
     // 调用render方法去渲染 el 属性
     // 先调用render方法创建虚拟节点，在续集节点渲染到页面上
+    vm.$el = el;
     callHook(vm, 'beforeMount');
-    vm._update(vm._render());
+    
+    // 初始化就会创建watcher
+    let updateComponent = () => {
+      vm._update(vm._render());
+    };
+    // 这个watcher是用于渲染的 目前没有任何功能 updateComponent()
+    new Watcher(vm, updateComponent, () => {
+      callHook(vm, 'beforeUpdate');
+    }, true);  // 渲染watcher 只是个名字
+    
     callHook(vm, 'mounted');
   }
 
@@ -524,7 +607,7 @@
         options.render = render;
       }
       // 需要挂载这个组件
-      mountComponent(vm);
+      mountComponent(vm, el);
     };
   }
 

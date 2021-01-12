@@ -10,6 +10,7 @@ export function patch (oldVnode, vnode) {
   parentElm.removeChild(oldVnode) // 删除老的节点
   
   // let el = createElm(vnode)
+  return el
 }
 
 function createElm (vnode) {
