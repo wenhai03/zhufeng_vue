@@ -59,7 +59,7 @@ function gen (node) {
 
 function getChildren (el) {
   const children = el.children
-  if (children) { // 将所有转化后的儿子用逗号拼接起来
+  if (children) { // 将所有转化后的儿子用逗号拼接起来
     return children.map(child => gen(child)).join(',')
   }
 }
