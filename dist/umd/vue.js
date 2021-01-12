@@ -39,7 +39,7 @@
         ob.observeArray(inserted);
       }
       
-      console.log('数组方法被调用了');
+      // console.log('数组方法被调用了')
       return result
     };
   });
@@ -101,11 +101,11 @@
     observe(value); // 如果是对象类型再进行观测(递归)
     Object.defineProperty(data, key,{
       get () {
-        console.log('用户获取值了');
+        // console.log('用户获取值了')
         return value
       },
       set (newValue) {
-        console.log('用户设置值了');
+        // console.log('用户设置值了')
         if (newValue === value) return
         observe(newValue); // 如果用户将值改成对象继续监控
         value = newValue;
@@ -350,7 +350,7 @@
     
     // 3.通过这课树 重新的生成代码
     let code = generate(ast);
-    console.log(code);
+    // console.log(code)
     
     // 4.将字符串变成函数 限制取值范围 通过with来进行取值 稍后调用render函数就可以通过改变this 让这个函数内部取到结果
     let render = new Function(`with(this){return ${code}}`);
@@ -359,13 +359,40 @@
     
   }
 
-  function lifecycleMixin(Vue) {
-    Vue.prototype._update = function (vnode) {
+  function patch(oldVnode, vnode) {
+    // 将虚拟节点转化成真实节点
+    console.log(oldVnode, vnode);
+    let el = createElm(vnode); // 产生真实的dom
+    let parentElm = oldVnode.parentNode; // 获取老的app的父亲 => body
+    parentElm.insertBefore(el, oldVnode.nextSibling); // 当前的真实元素插入到app的后面
+    parentElm.removeChild(oldVnode); // 删除老的节点
     
+    // let el = createElm(vnode)
+  }
+
+  function createElm(vnode) {
+    let {tag, children, key, data, text} = vnode;
+    if (typeof tag == 'string') { // 创建元素 放到vnode上
+      vnode.el = document.createElement(tag);
+      children.forEach(child  => { // 遍历儿子 将儿子渲染后的结果扔到父亲中
+        vnode.el.appendChild(createElm(child));
+      });
+    } else { // 创建文件 放到vnode.el上
+      vnode.el = document.createTextNode(text);
+    }
+    
+    return vnode.el
+  }
+
+  function lifecycleMixin (Vue) {
+    Vue.prototype._update = function (vnode) {
+      const vm = this;
+      patch(vm.$el, vnode);
+      
     };
   }
 
-  function mountComponent(vm, el) {
+  function mountComponent (vm, el) {
     // 调用render方法去渲染 el 属性
     
     // 先调用render方法创建虚拟节点，在续集节点渲染到页面上
@@ -395,6 +422,7 @@
       const vm = this;
       const options = vm.$options;
       el = document.querySelector(el);
+      vm.$el = el;
       
       if (!options.render) {
         // 没有render 将template转化成render方法
@@ -429,7 +457,7 @@
       const vm = this;
       const render = vm.$options.render;
       let vnode = render.call(vm);
-      console.log(vnode);
+      // console.log(vnode)
       return vnode
     };
   }

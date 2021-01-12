@@ -1,4 +1,5 @@
 
+## Vue的渲染流程 => 先初始化数据 => 将模板进行编译 => render函数  => 生成虚拟节点  => 生成真实的dom  => 扔到页面上
 
 ### cnpm i rollup @babel/core @babel/preset-env rollup-plugin-babel rollup-plugin-serve cross-env -D
 

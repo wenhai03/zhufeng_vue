@@ -14,7 +14,7 @@ export function renderMixin(Vue) { // 用对象来描述dom结构
     const vm = this
     const render = vm.$options.render
     let vnode = render.call(vm)
-    console.log(vnode)
+    // console.log(vnode)
     return vnode
   }
 }

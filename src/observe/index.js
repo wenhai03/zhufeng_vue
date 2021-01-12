@@ -39,11 +39,11 @@ function defineReactive (data, key, value) {
   observe(value) // 如果是对象类型再进行观测(递归)
   Object.defineProperty(data, key,{
     get () {
-      console.log('用户获取值了')
+      // console.log('用户获取值了')
       return value
     },
     set (newValue) {
-      console.log('用户设置值了')
+      // console.log('用户设置值了')
       if (newValue === value) return
       observe(newValue) // 如果用户将值改成对象继续监控
       value = newValue

@@ -7,13 +7,20 @@
 <body>
 <script src="/dist/umd/vue.js"></script>
 
-<div id="app" style="color: red">hello {{name}} hello <span>hello</span></div>
+<div id="app" style="color: red">
+  <p>hello world zf</p>
+  <li>{{school.name}}</li>
+  <li>{{school.age}}</li>
+</div>
 
 <script>
   let vm = new Vue({
     el: '#app',
     data() {
-      return {name: 'zf'}
+      return {
+        arr: [1,2,3],
+        school: {name: 'zf', age: 10}
+      }
     },
     computed() {},
     watch() {},

@@ -35,7 +35,7 @@ methods.forEach(method => {
       ob.observeArray(inserted)
     }
     
-    console.log('数组方法被调用了')
+    // console.log('数组方法被调用了')
     return result
   }
 })
