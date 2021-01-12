@@ -3,7 +3,7 @@ export function patch (oldVnode, vnode) {
   // oldVnode => id#app   vnode 我们根据模板产生的虚拟dom
   
   // 将虚拟节点转化成真实节点
-  console.log(oldVnode, vnode)
+  // console.log(oldVnode, vnode)
   let el = createElm(vnode) // 产生真实的dom
   let parentElm = oldVnode.parentNode // 获取老的app的父亲 => body
   parentElm.insertBefore(el, oldVnode.nextSibling) // 当前的真实元素插入到app的后面

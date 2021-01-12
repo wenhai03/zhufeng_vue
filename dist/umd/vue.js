@@ -63,6 +63,68 @@
     });
   }
 
+  const LIFECYCLE_HOOKS = [
+    'beforeCreate',
+    'created',
+    'beforeMount',
+    'mounted',
+    'beforeUpdate',
+    'update',
+    'beforeDestroy',
+    'destroy',
+  ];
+
+  const strats = {};
+  strats.data = function (parentVal, childValue) {
+    // 这里应该有合并 data 的策略
+    return childValue
+  };
+  strats.computed = function () {};
+  strats.watch = function () {};
+  function mergeHook(parentVal, childValue) { // 生命周期的合并
+    if (childValue) {
+      if (parentVal) {
+        return parentVal.concat(childValue)  // 爸爸和儿子进行拼接
+      } else {
+        return [childValue] // 儿子需要转化成数组
+      }
+    } else {
+      return parentVal // 不合并了 采用父亲的
+    }
+
+  }
+  LIFECYCLE_HOOKS.forEach(hook => {
+    strats[hook] = mergeHook;
+  });
+
+  function mergeOptions(parent, child) {
+    // 遍历父亲，可能是父亲有 儿子没有
+    const options = {};
+    
+    for (let key in parent) {
+      mergeField(key);
+    }
+    
+    // 儿子有父亲没有
+    for (const key in child) { // 将儿子多的赋予到父亲上
+      if (!parent.hasOwnProperty(key)) {
+        mergeField(key);
+      }
+    }
+    
+    function mergeField(key) { // 合并字段
+      // 根据key 不同的策略来进行合并
+      if (strats[key]) {
+        options[key] = strats[key](parent[key], child[key]);
+      } else {
+        // todo默认合并
+        options[key] = child[key];
+      }
+    }
+    
+    return options
+  }
+
   class Observer {
     constructor (value) {
       // 使用defineProperty重新定义属性
@@ -358,7 +420,7 @@
     // oldVnode => id#app   vnode 我们根据模板产生的虚拟dom
     
     // 将虚拟节点转化成真实节点
-    console.log(oldVnode, vnode);
+    // console.log(oldVnode, vnode)
     let el = createElm(vnode); // 产生真实的dom
     let parentElm = oldVnode.parentNode; // 获取老的app的父亲 => body
     parentElm.insertBefore(el, oldVnode.nextSibling); // 当前的真实元素插入到app的后面
@@ -411,21 +473,33 @@
 
   function mountComponent (vm, el) {
     // 调用render方法去渲染 el 属性
-    
     // 先调用render方法创建虚拟节点，在续集节点渲染到页面上
+    callHook(vm, 'beforeMount');
     vm._update(vm._render());
+    callHook(vm, 'mounted');
+  }
+
+  function callHook(vm, hook) {
+    const handlers = vm.$options[hook]; // vm.$options.created = [a1, a2, a3]
+    if (handlers) {
+      for (let i = 0; i < handlers.length; i++) {
+        handlers[i].call(vm); // 更改生命周期中的this
+      }
+    }
   }
 
   // 在原型上添加一个init方法
   function initMixin (Vue) {
-    // 初始化流程
+    // 全局组件和局部组件的区别
     Vue.prototype._init = function (options) {
       // 数据的劫持
       const vm = this; // vue中使用 this.$options 指代的就是用户传递的属性
-      vm.$options = options;
+      // 需要将用户自定义的options和全局的option合并
+      vm.$options = mergeOptions(vm.constructor.options, options);
+      callHook(vm, 'beforeCreate');
       // 初始化状态
       initState(vm);
-      
+      callHook(vm, 'created');
       // 如果当前有el属性说明要渲染模板
       if (vm.$options.el) {
         vm.$mount(vm.$options.el);
@@ -496,6 +570,19 @@
     }
   }
 
+  function initGlobalApi(Vue) {
+    Vue.options = {};  // Vue.components  Vue.directive
+    Vue.mixin = function (mixin) {
+      // 合并对象 (先考虑生命周期)  不考虑其他的合并 data computed watcher
+      this.options = mergeOptions(this.options, mixin);
+      
+      // console.log(this.options) // this.options = {created: [a, b]}
+    };
+    
+    // Vue.options, options
+    // 用户 new Vue({created() {}})
+  }
+
   // Vue的核心代码 只是Vue的一个声明
 
   // 用Vue 的构造函数 创建组件
@@ -503,9 +590,14 @@
     this._init(options); // 组件初始化的入口
   }
 
+  // 原型方法
   initMixin(Vue); // init方法
   lifecycleMixin(Vue); // _update
   renderMixin(Vue); // _render
+
+
+  // 静态方法 Vue.component Vue.directive Vue.extend  Vue.mixin ...
+  initGlobalApi(Vue);
 
   return Vue;
 

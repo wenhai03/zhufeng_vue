@@ -1,17 +1,20 @@
 import {initState} from './state'
 import {compileToFunctions} from "./compiler/index"
-import {mountComponent} from "./lifecycle"
+import {callHook, mountComponent} from "./lifecycle"
+import {mergeOptions} from "./util"
 
 // 在原型上添加一个init方法
 export function initMixin (Vue) {
-  // 初始化流程
+  // 全局组件和局部组件的区别
   Vue.prototype._init = function (options) {
     // 数据的劫持
     const vm = this // vue中使用 this.$options 指代的就是用户传递的属性
-    vm.$options = options
+    // 需要将用户自定义的options和全局的option合并
+    vm.$options = mergeOptions(vm.constructor.options, options)
+    callHook(vm, 'beforeCreate')
     // 初始化状态
     initState(vm)
-    
+    callHook(vm, 'created')
     // 如果当前有el属性说明要渲染模板
     if (vm.$options.el) {
       vm.$mount(vm.$options.el)
