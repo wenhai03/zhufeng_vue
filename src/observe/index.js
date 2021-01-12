@@ -13,7 +13,7 @@ class Observer {
       // 函数劫持 切片编程
       value.__proto__ = arrayProtoMethods
       // 观测数组中的对象类型，对象变化也要做一些事
-      this.observeArray(value )
+      this.observeArray(value ) // 数组中普通类型是不做类型观测的
     } else {
       this.walk(value)
     }
@@ -39,11 +39,9 @@ function defineReactive (data, key, value) {
   observe(value) // 如果是对象类型再进行观测(递归)
   Object.defineProperty(data, key,{
     get () {
-      // console.log('用户获取值了')
       return value
     },
     set (newValue) {
-      // console.log('用户设置值了')
       if (newValue === value) return
       observe(newValue) // 如果用户将值改成对象继续监控
       value = newValue
@@ -62,4 +60,6 @@ export function observe(data){
   }
   return new Observer(data)
   
+  // 只观测存在的属性 data: {a: 1, b: 2}
+  // 数组中更改索引和长度 无法被监控
 }

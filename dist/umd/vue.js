@@ -75,7 +75,7 @@
         // 函数劫持 切片编程
         value.__proto__ = arrayProtoMethods;
         // 观测数组中的对象类型，对象变化也要做一些事
-        this.observeArray(value );
+        this.observeArray(value ); // 数组中普通类型是不做类型观测的
       } else {
         this.walk(value);
       }
@@ -101,11 +101,9 @@
     observe(value); // 如果是对象类型再进行观测(递归)
     Object.defineProperty(data, key,{
       get () {
-        // console.log('用户获取值了')
         return value
       },
       set (newValue) {
-        // console.log('用户设置值了')
         if (newValue === value) return
         observe(newValue); // 如果用户将值改成对象继续监控
         value = newValue;
@@ -124,23 +122,8 @@
     }
     return new Observer(data)
     
-  }
-
-  function initData (vm) {
-    // 数据初始化工作
-    let data = vm.$options. data; // 用户传递的data
-    vm._data = data = typeof data === 'function' ? data.call(vm) : data;
-    // 对象劫持 用户改变了数据 我希望可以得到通知 => 刷新页面
-    // MVVM模式 数据变化可以驱动视图变化
-    // Object.defineProperty() 给属性增加get和set方法
-    
-    
-    // 当我去vm上取属性时，帮我将属性的取值代理到vm._data上
-    for (let key in data) {
-      proxy(vm, '_data', key);
-    }
-    observe(data); // 响应式原理
-    
+    // 只观测存在的属性 data: {a: 1, b: 2}
+    // 数组中更改索引和长度 无法被监控
   }
 
   function initState (vm) {
@@ -153,6 +136,18 @@
     }
     if (opts.computed) ;
     if (opts.watch) ;
+  }
+
+  function initData (vm) { // 数据的初始化操作
+    let data = vm.$options. data; // 用户传递的data
+    // vm._data保存用户的所有data
+    vm._data = data = typeof data === 'function' ? data.call(vm) : data;
+    
+    for (let key in data) {
+      proxy(vm, '_data', key);
+    }
+    observe(data); // 让这个对象重新定义 set 和 get
+    
   }
 
   const unicodeRegExp = /a-zA-Z\u00B7\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u037D\u037F-\u1FFF\u200C-\u200D\u203F-\u2040\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD/;
@@ -339,8 +334,7 @@
   }
 
   function compileToFunctions (template) {
-    // console.log('template', template)
-    // html模板 => render函数  (ast是用来描述代码的)
+     // html模板 => render函数  (ast是用来描述代码的)
     // 1.需要将html代码转化成 ast 语法树 可以用ast树来描述语言本身
     
     // 前端必须要掌握的数据结构 (树)
@@ -359,7 +353,10 @@
     
   }
 
-  function patch(oldVnode, vnode) {
+  function patch (oldVnode, vnode) {
+    
+    // oldVnode => id#app   vnode 我们根据模板产生的虚拟dom
+    
     // 将虚拟节点转化成真实节点
     console.log(oldVnode, vnode);
     let el = createElm(vnode); // 产生真实的dom
@@ -370,18 +367,38 @@
     // let el = createElm(vnode)
   }
 
-  function createElm(vnode) {
+  function createElm (vnode) {
     let {tag, children, key, data, text} = vnode;
     if (typeof tag == 'string') { // 创建元素 放到vnode上
       vnode.el = document.createElement(tag);
-      children.forEach(child  => { // 遍历儿子 将儿子渲染后的结果扔到父亲中
+      
+      // 只有元素才有属性
+      updateProperties(vnode);
+      
+      children.forEach(child => { // 遍历儿子 将儿子渲染后的结果扔到父亲中
         vnode.el.appendChild(createElm(child));
       });
     } else { // 创建文件 放到vnode.el上
       vnode.el = document.createTextNode(text);
     }
-    
     return vnode.el
+  }
+
+  function updateProperties (vnode) {
+    let el = vnode.el;
+    let newProps = vnode.data || {};
+    for (let key in newProps) {
+      if (key === 'style') {
+        for (let styleName in newProps.style) {
+          el.style[styleName] = newProps.style[styleName];
+        }
+      } else if (key === 'class') {
+        el.className = newProps.class;
+      } else {
+        el.setAttribute(key, newProps[key]);
+      }
+    }
+    
   }
 
   function lifecycleMixin (Vue) {
@@ -400,14 +417,12 @@
   }
 
   // 在原型上添加一个init方法
-  function initMixin(Vue) {
+  function initMixin (Vue) {
     // 初始化流程
     Vue.prototype._init = function (options) {
-      
       // 数据的劫持
       const vm = this; // vue中使用 this.$options 指代的就是用户传递的属性
       vm.$options = options;
-      
       // 初始化状态
       initState(vm);
       
@@ -416,8 +431,8 @@
         vm.$mount(vm.$options.el);
       }
     };
-    
-    Vue.prototype.$mount = function (el){
+    // 1.render  2.template  3.外部template  (el存在的时候)
+    Vue.prototype.$mount = function (el) {
       // 挂载操作
       const vm = this;
       const options = vm.$options;
@@ -425,27 +440,26 @@
       vm.$el = el;
       
       if (!options.render) {
-        // 没有render 将template转化成render方法
         let template = options.template;
         if (!template && el) {
           template = el.outerHTML;
         }
-        // 编译原理 将模板编译成render函数
+        // template => render方法 编译原理 将模板编译成render函数
+        // 1.处理模板变为sat树 2.标记静态节点 3.codegen => return 字符串 4.new Function + with (render 函数)
         const render = compileToFunctions(template);
         options.render = render;
       }
-      // 渲染时候用的都是这个render方法
-      
       // 需要挂载这个组件
       mountComponent(vm);
     };
   }
 
-  function renderMixin(Vue) { // 用对象来描述dom结构
+  function renderMixin (Vue) { // 用对象来描述dom结构
     
     Vue.prototype._c = function () { // 创建虚拟dom元素
       return createElement(...arguments)
     };
+    // 1.当结果是对象时 会对这个对象取值
     Vue.prototype._s = function (val) { // stringify
       return val == null ? '' : (typeof val == 'object') ? JSON.stringify(val) : val
     };
@@ -463,15 +477,16 @@
   }
 
   // _c('div', {}, 1,2,3,4,5)
-  function createElement(tag, data={}, ...children) {
+  function createElement (tag, data = {}, ...children) {
     return vnode(tag, data, data.key, children)
   }
 
-  function createTextVnode(text) {
+  function createTextVnode (text) {
     return vnode(undefined, undefined, undefined, undefined, text)
   }
-  // 用来产生虚拟dom的
-  function vnode(tag, data, key, children, text) {
+
+  // 用来产生虚拟dom，操作真实dom浪费性能
+  function vnode (tag, data, key, children, text) {
     return {
       tag,
       data,
@@ -483,15 +498,14 @@
 
   // Vue的核心代码 只是Vue的一个声明
 
+  // 用Vue 的构造函数 创建组件
   function Vue(options) {
-    // 进行Vue的初始化操作
-    this._init(options);
+    this._init(options); // 组件初始化的入口
   }
 
-  // 通过引入文件的方式 给Vue原型上添加方法
-  initMixin(Vue);
-  lifecycleMixin(Vue); // 混合生命周期 渲染
-  renderMixin(Vue);
+  initMixin(Vue); // init方法
+  lifecycleMixin(Vue); // _update
+  renderMixin(Vue); // _render
 
   return Vue;
 

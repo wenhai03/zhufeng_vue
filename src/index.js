@@ -3,14 +3,14 @@ import {initMixin} from './init'
 import {lifecycleMixin} from "./lifecycle"
 import {renderMixin} from "./vdom/index"
 
+// 用Vue 的构造函数 创建组件
 function Vue(options) {
-  // 进行Vue的初始化操作
-  this._init(options)
+  this._init(options) // 组件初始化的入口
 }
 
-// 通过引入文件的方式 给Vue原型上添加方法
-initMixin(Vue)
-lifecycleMixin(Vue) // 混合生命周期 渲染
-renderMixin(Vue)
+initMixin(Vue) // init方法
+lifecycleMixin(Vue) // _update
+renderMixin(Vue) // _render
 
+// 初始方法
 export default Vue

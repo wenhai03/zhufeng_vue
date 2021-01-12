@@ -1,8 +1,9 @@
-export function renderMixin(Vue) { // 用对象来描述dom结构
+export function renderMixin (Vue) { // 用对象来描述dom结构
   
   Vue.prototype._c = function () { // 创建虚拟dom元素
     return createElement(...arguments)
   }
+  // 1.当结果是对象时 会对这个对象取值
   Vue.prototype._s = function (val) { // stringify
     return val == null ? '' : (typeof val == 'object') ? JSON.stringify(val) : val
   }
@@ -20,15 +21,16 @@ export function renderMixin(Vue) { // 用对象来描述dom结构
 }
 
 // _c('div', {}, 1,2,3,4,5)
-function createElement(tag, data={}, ...children) {
+function createElement (tag, data = {}, ...children) {
   return vnode(tag, data, data.key, children)
 }
 
-function createTextVnode(text) {
+function createTextVnode (text) {
   return vnode(undefined, undefined, undefined, undefined, text)
 }
-// 用来产生虚拟dom的
-function vnode(tag, data, key, children, text) {
+
+// 用来产生虚拟dom，操作真实dom浪费性能
+function vnode (tag, data, key, children, text) {
   return {
     tag,
     data,
