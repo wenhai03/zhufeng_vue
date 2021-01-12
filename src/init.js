@@ -1,5 +1,6 @@
 import {initState} from './state'
 import {compileToFunctions} from "./compiler/index"
+import {mountComponent} from "./lifecycle"
 
 // 在原型上添加一个init方法
 export function initMixin(Vue) {
@@ -35,5 +36,9 @@ export function initMixin(Vue) {
       const render = compileToFunctions(template)
       options.render = render
     }
+    // 渲染时候用的都是这个render方法
+    
+    // 需要挂载这个组件
+    mountComponent(vm, el)
   }
 }

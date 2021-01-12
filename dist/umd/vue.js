@@ -359,6 +359,19 @@
     
   }
 
+  function lifecycleMixin(Vue) {
+    Vue.prototype._update = function (vnode) {
+    
+    };
+  }
+
+  function mountComponent(vm, el) {
+    // 调用render方法去渲染 el 属性
+    
+    // 先调用render方法创建虚拟节点，在续集节点渲染到页面上
+    vm._update(vm._render());
+  }
+
   // 在原型上添加一个init方法
   function initMixin(Vue) {
     // 初始化流程
@@ -393,7 +406,51 @@
         const render = compileToFunctions(template);
         options.render = render;
       }
+      // 渲染时候用的都是这个render方法
+      
+      // 需要挂载这个组件
+      mountComponent(vm);
     };
+  }
+
+  function renderMixin(Vue) { // 用对象来描述dom结构
+    
+    Vue.prototype._c = function () { // 创建虚拟dom元素
+      return createElement(...arguments)
+    };
+    Vue.prototype._s = function (val) { // stringify
+      return val == null ? '' : (typeof val == 'object') ? JSON.stringify(val) : val
+    };
+    Vue.prototype._v = function (text) { // 创建虚拟dom文本元素
+      return createTextVnode(text)
+    };
+    
+    Vue.prototype._render = function () {  // _render = render
+      const vm = this;
+      const render = vm.$options.render;
+      let vnode = render.call(vm);
+      console.log(vnode);
+      return vnode
+    };
+  }
+
+  // _c('div', {}, 1,2,3,4,5)
+  function createElement(tag, data={}, ...children) {
+    return vnode(tag, data, data.key, children)
+  }
+
+  function createTextVnode(text) {
+    return vnode(undefined, undefined, undefined, undefined, text)
+  }
+  // 用来产生虚拟dom的
+  function vnode(tag, data, key, children, text) {
+    return {
+      tag,
+      data,
+      key,
+      children,
+      text
+    }
   }
 
   // Vue的核心代码 只是Vue的一个声明
@@ -405,6 +462,8 @@
 
   // 通过引入文件的方式 给Vue原型上添加方法
   initMixin(Vue);
+  lifecycleMixin(Vue); // 混合生命周期 渲染
+  renderMixin(Vue);
 
   return Vue;
 
