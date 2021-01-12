@@ -275,7 +275,7 @@
 
   // 语法层面的转义
   function genProps (attrs) { // id "app"   style "color: red"
-    console.log('attrs -> ', attrs);
+    // console.log('attrs -> ', attrs)
     let str = '';
     for (let i = 0; i < attrs.length; i++) {
       let attr = attrs[i];
@@ -323,7 +323,7 @@
 
   function getChildren (el) {
     const children = el.children;
-    if (children) { // 将所有转化后的儿子用逗号拼接起来
+    if (children) { // 将所有转化后的儿子用逗号拼接起来
       return children.map(child => gen(child)).join(',')
     }
   }
@@ -351,6 +351,11 @@
     // 3.通过这课树 重新的生成代码
     let code = generate(ast);
     console.log(code);
+    
+    // 4.将字符串变成函数 限制取值范围 通过with来进行取值 稍后调用render函数就可以通过改变this 让这个函数内部取到结果
+    let render = new Function(`with(this){return ${code}}`);
+    // console.log(render)
+    return render
     
   }
 

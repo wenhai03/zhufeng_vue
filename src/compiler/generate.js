@@ -11,7 +11,7 @@ const defaultTagRE = /\{\{((?:.|\r?\n)+?)\}\}/g
 
 // 语法层面的转义
 function genProps (attrs) { // id "app"   style "color: red"
-  console.log('attrs -> ', attrs)
+  // console.log('attrs -> ', attrs)
   let str = ''
   for (let i = 0; i < attrs.length; i++) {
     let attr = attrs[i]
