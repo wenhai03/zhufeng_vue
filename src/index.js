@@ -3,6 +3,7 @@ import {initMixin} from './init'
 import {lifecycleMixin} from "./lifecycle"
 import {renderMixin} from "./vdom/index"
 import {initGlobalApi} from "./global-api/index.js"
+import {stateMixin} from "./state"
 
 // 用Vue 的构造函数 创建组件
 function Vue(options) {
@@ -13,7 +14,7 @@ function Vue(options) {
 initMixin(Vue) // init方法
 lifecycleMixin(Vue) // _update
 renderMixin(Vue) // _render
-
+stateMixin(Vue)
 
 // 静态方法 Vue.component Vue.directive Vue.extend  Vue.mixin ...
 initGlobalApi(Vue)

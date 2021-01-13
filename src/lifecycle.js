@@ -3,6 +3,7 @@ import Watcher from "./observer/watcher"
 
 export function lifecycleMixin (Vue) {
   Vue.prototype._update = function (vnode) {
+    console.log('vnode000', vnode)
     const vm = this
     // 用新创建的元素 替换老的vm.$el
     vm.$el = patch(vm.$el, vnode)
@@ -21,8 +22,8 @@ export function mountComponent (vm, el) {
   }
   // 这个watcher是用于渲染的 目前没有任何功能 updateComponent()
   
-  new Watcher(vm, updateComponent, () => {
-    callHook(vm, 'beforeUpdate')
+  let watcher = new Watcher(vm, updateComponent, () => {
+    callHook(vm, 'updated')
   }, true)  // 渲染watcher 只是个名字
   
   callHook(vm, 'mounted')

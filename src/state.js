@@ -1,5 +1,5 @@
 import {observe} from "./observer/index"
-import {proxy} from "./util"
+import {nextTick, proxy} from "./util"
 
 export function initState (vm) {
   const opts = vm.$options
@@ -48,4 +48,10 @@ function initProps (vm) {
 
 function initMethod (vm) {
 
+}
+
+export function stateMixin(Vue) {
+  Vue.prototype.$nextTick = function (cb) {
+    nextTick(cb)
+  }
 }

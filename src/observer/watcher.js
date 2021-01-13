@@ -1,11 +1,13 @@
 import {popTarget, pushTarget} from "./dep"
+import {nextTick} from "../util"
 
 let id = 0
+
 
 class Watcher {  // vm.$watch
   // vm实例
   // exprOrFn   vm._update(vm._render())
-  constructor(vm, exprOrFn, cb, options) {
+  constructor (vm, exprOrFn, cb, options) {
     this.vm = vm
     this.exprOrFn = exprOrFn
     this.cb = cb
@@ -19,7 +21,8 @@ class Watcher {  // vm.$watch
     
     this.get() // 默认会调用get方法
   }
-  addDep(dep) {
+  
+  addDep (dep) {
     let id = dep.id
     if (!this.depsId.has(id)) {
       this.deps.push(dep)
@@ -28,16 +31,72 @@ class Watcher {  // vm.$watch
     }
   }
   
-  get(){
+  get () {
     // Dep.target = watcher
     pushTarget(this) // 当前watcher实例
     this.getter()  // 调用exprOrFn 渲染页面 取值（执行了get方法）render方法  with(vm){_v(msg)}
     popTarget()
   }
-  update() {
-    this.get() // 重新渲染
+  
+  run () {
+    this.get()
+  }
+  
+  update () {
+    // 这里不要每次都调用get方法  get方法会重新渲染页面
+    queueWatcher(this) // 暂存的概念
+    // this.get() // 重新渲染
   }
 }
+
+let queue = [] // 将需要批量更新的watcher 存早一个队列汇总，稍后让watcher执行
+let has = {}
+let pending = false
+
+
+function flushScheduleQueue () {
+  queue.forEach(watcher => {
+    watcher.run()
+    watcher.cb()
+  })
+  queue = [] // 清空watcher队列为了下次使用
+  has = {} // 清空标识的id
+  pending = false
+}
+
+function queueWatcher (watcher) {
+  const id = watcher.id  // 对watcher进行去重
+  if (has[id] == null) {
+    queue.push(watcher) // 并且将watcher存到队列中
+    has[id] = true
+    // 等待所有同步代码执行完毕后再执行
+    if (!pending) { // 如果还没有清空队列，就不要再开定时器了       防抖处理
+      nextTick(flushScheduleQueue)
+      
+      pending = true
+    }
+  }
+  
+}
+
+/*function queueWatcher (watcher) {
+  const id = watcher.id  // 对watcher进行去重
+  if (has[id] == null) {
+    queue.push(watcher) // 并且将watcher存到队列中
+    has[id] = true
+    // 等待所有同步代码执行完毕后再执行
+    if (!pending) { // 如果还没有清空队列，就不要再开定时器了       防抖处理
+      setTimeout(() => {
+        queue.forEach(watcher => watcher.run())
+        queue = [] // 清空watcher队列为了下次使用
+        has = {} // 清空标识的id
+        pending = false
+      }, 0)
+      
+      pending = true
+    }
+  }
+}*/
 
 export default Watcher
 

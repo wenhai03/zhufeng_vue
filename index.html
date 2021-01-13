@@ -8,6 +8,7 @@
 
 <div id="app" style="color: red">
   <li>{{arr}}</li>
+  <li>{{a}}</li>
 </div>
 <script src="/dist/umd/vue.js"></script>
 
@@ -35,15 +36,42 @@
     },
     created() { // 生命周期 就是回调函数，先订阅好 后续会触发此方法
       console.log('my created')
+    },
+    updated() {
+      console.log('updated')
     }
     // [created1, created2]
 
 
   });
  setTimeout(() => {
+   // 批处理 => vue异步更新，更新数据后不能立刻拿到最新的节点
+   // nextTick 等待页面更新好后再获取最终的dom
    vm.arr.push(123)
+   vm.arr.push(123)
+   vm.arr.push(123)
+   vm.arr.push(123)
+   vm.arr.push(123)
+   // console.log(vm.$el.innerHTML, '1111111111')
+   vm.$nextTick(() => {
+     // console.log(vm.$el.innerHTML, '22222222222')
+   })
  }, 1000)
 
+
+  // watcher和dep的互记 watcher去重 异步更新
+  // 组件的渲染 Vue.extend
+  // diff 算法  vue-router  vuex
+  // 计算属性 watch的实现
+
+  /*
+  * 1.我取arr的值 会调用get方法 我希望让当前数组记住这个渲染watcher
+  * 2.我给所有的对象类型都增加一个dep属性
+  * 3.当页面对arr取值时 我就让数组的dep记住这个watcher
+  * 等会我更新数组时 push shift 方法时 找到数组对应的watcher来更新
+  *
+  *
+  * */
 
 </script>
 </body>
