@@ -202,7 +202,7 @@
       get () { // 依赖收集
         if (Dep.target) { // 让这个属性记住这个watcher
           dep.depend();
-          if (typeof childDep) { // 可能是数组可能是对象
+          if (childDep) { // 可能是数组可能是对象
             // 默认给数组增加了一个dep属性，当对数组这个对象取值的时候
             childDep.dep.depend(); // 数组存起来了这个渲染watcher
           }

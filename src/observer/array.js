@@ -28,7 +28,7 @@ methods.forEach(method => {
         break
       case 'splice': // vue.$set原理
         inserted = args.slice(2) // arr.splice(0, 1, {a: 1})
-      default:
+      default:
         break;
     }
     if (inserted) {
