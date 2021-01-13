@@ -19,4 +19,21 @@ stateMixin(Vue)
 // 静态方法 Vue.component Vue.directive Vue.extend  Vue.mixin ...
 initGlobalApi(Vue)
 // 初始方法
+
+// 为了看到diff的整个流程 创建两个虚拟节点来进行对比操作
+import {compileToFunctions} from './compiler/index'
+import {createElm, patch} from './vdom/patch'
+let vm1 = new Vue({data: {name: 'zf'}})
+let render1 = compileToFunctions(`<p id="a">{{name}}</p>`)
+let vnode1 = render1.call(vm1)
+
+document.body.appendChild(createElm(vnode1))
+
+let vm2 = new Vue({data: {name: 'jw'}})
+let render2 = compileToFunctions(`<div id="b">{{name}}</div>`)
+let vnode2 = render2.call(vm2)
+
+// 用新的虚拟节点对比老的虚拟节点，找到差异 去更新老的dom元素
+patch(vnode1, vnode2) // 传入新的节点
+
 export default Vue
