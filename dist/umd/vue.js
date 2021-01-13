@@ -38,7 +38,7 @@
         // 给数组新增的值也要进行观测
         ob.observeArray(inserted);
       }
-      
+      ob.dep.notify();
       // console.log('数组方法被调用了')
       return result
     };
@@ -125,23 +125,35 @@
     return options
   }
 
-  class Dep{
-    constructor(){
+  let id = 0;
+
+  class Dep {
+    constructor () {
       this.subs = [];
+      this.id = id++;
     }
-    depend() {
-      this.subs.push(Dep.target);
+    
+    depend () {
+      Dep.target.addDep(this);
+      
+      // this.subs.push(Dep.target)
     }
-    notify() {
+    
+    addSub (watcher) {
+      this.subs.push(watcher);
+    }
+    
+    notify () {
       this.subs.forEach(watcher => watcher.update());
     }
   }
 
   Dep.target = null; // 静态属性 就一份
-  function pushTarget(watcher){
+  function pushTarget (watcher) {
     Dep.target = watcher; // 保留watcher
   }
-  function popTarget(){
+
+  function popTarget () {
     Dep.target = null;  // 将变量删除掉
   }
 
@@ -152,7 +164,7 @@
   class Observer {
     constructor (value) {
       // 使用defineProperty重新定义属性
-      
+      this.dep = new Dep();
       // 判断一个对象是否被观测过看他有没有 __ob__这个属性
       defineProperty(value, '__ob__', this);
       
@@ -185,7 +197,7 @@
 
   // 封装 继承
   function defineReactive (data, key, value) {
-    observe(value); // 如果是对象类型再进行观测(递归)
+    let childDep = observe(value); // 如果是对象类型再进行观测(递归)
     
     let dep = new Dep(); // 每个属性都有一个dep
     
@@ -194,7 +206,11 @@
       get () { // 依赖收集
         if (Dep.target) {
           dep.depend();
+          if (childDep) {
+            childDep.dep.depend();
+          }
         }
+        console.log('dep.subs', dep.subs);
         
         return value
       },
@@ -208,6 +224,7 @@
   }
 
   function observe (data) {
+    console.log('data -> ', data);
     // typeof null 也是 object
     // 不能不是对象 并且不是null
     if (typeof data !== 'object' || data == null) {
@@ -498,7 +515,7 @@
     
   }
 
-  let id = 0;
+  let id$1 = 0;
 
   class Watcher {  // vm.$watch
     // vm实例
@@ -508,7 +525,9 @@
       this.exprOrFn = exprOrFn;
       this.cb = cb;
       this.options = options;
-      this.id = id++; // watcher的唯一标识
+      this.id = id$1++; // watcher的唯一标识
+      this.deps = [];
+      this.depsId = new Set();
       
       if (typeof exprOrFn === 'function') {
         this.getter = exprOrFn;
@@ -516,7 +535,14 @@
       
       this.get(); // 默认会调用get方法
     }
-    
+    addDep(dep) {
+      let id = dep.id;
+      if (!this.depsId.has(id)) {
+        this.deps.push(dep);
+        this.depsId.add(id);
+        dep.addSub(this);
+      }
+    }
     get(){
       // Dep.target = watcher
       pushTarget(this); // 当前watcher实例
@@ -540,7 +566,6 @@
       const vm = this;
       // 用新创建的元素 替换老的vm.$el
       vm.$el = patch(vm.$el, vnode);
-      
     };
   }
 
@@ -555,6 +580,7 @@
       vm._update(vm._render());
     };
     // 这个watcher是用于渲染的 目前没有任何功能 updateComponent()
+    
     new Watcher(vm, updateComponent, () => {
       callHook(vm, 'beforeUpdate');
     }, true);  // 渲染watcher 只是个名字

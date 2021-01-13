@@ -34,7 +34,7 @@ methods.forEach(method => {
       // 给数组新增的值也要进行观测
       ob.observeArray(inserted)
     }
-    
+    ob.dep.notify()
     // console.log('数组方法被调用了')
     return result
   }

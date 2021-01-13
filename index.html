@@ -7,9 +7,7 @@
 <body>
 
 <div id="app" style="color: red">
-  <p style="color: blue">hello world zf</p>
-  <li>{{school.name}}</li>
-  <li>{{school.age}}</li>
+  <li>{{arr}}</li>
 </div>
 <script src="/dist/umd/vue.js"></script>
 
@@ -31,8 +29,8 @@
     el: '#app',
     data() {
       return {
-        arr: [1,2,3],
-        school: {name: 'zf', age: 10}
+        arr: [{a:1},2,3],
+        school: {name: '00000zf', age: 10}
       }
     },
     created() { // 生命周期 就是回调函数，先订阅好 后续会触发此方法
@@ -42,7 +40,10 @@
 
 
   });
- setTimeout(() => {
+  setTimeout(() => {
+    vm.arr.push(123)
+  }, 2000)
+/* setTimeout(() => {
    vm.school.name = 'zs'  // 重新调用 _render 在调用 _update
    vm._update(vm._render())
 
@@ -51,7 +52,7 @@
  }, 1000)
   setTimeout(() => {
     vm.school.name = 'jw'  // 重新调用 _render 在调用 _update
-  }, 2000)
+  }, 2000)*/
 
 </script>
 </body>

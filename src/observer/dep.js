@@ -1,20 +1,32 @@
-class Dep{
-  constructor(){
+let id = 0
+
+class Dep {
+  constructor () {
     this.subs = []
+    this.id = id++
   }
-  depend() {
-    this.subs.push(Dep.target)
+  
+  depend () {
+    Dep.target.addDep(this)
+    
+    // this.subs.push(Dep.target)
   }
-  notify() {
+  
+  addSub (watcher) {
+    this.subs.push(watcher)
+  }
+  
+  notify () {
     this.subs.forEach(watcher => watcher.update())
   }
 }
 
 Dep.target = null // 静态属性 就一份
-export function pushTarget(watcher){
+export function pushTarget (watcher) {
   Dep.target = watcher // 保留watcher
 }
-export function popTarget(){
+
+export function popTarget () {
   Dep.target = null  // 将变量删除掉
 }
 

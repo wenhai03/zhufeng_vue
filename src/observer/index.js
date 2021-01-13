@@ -5,7 +5,7 @@ import Dep from "./dep"
 class Observer {
   constructor (value) {
     // 使用defineProperty重新定义属性
-    
+    this.dep = new Dep()
     // 判断一个对象是否被观测过看他有没有 __ob__这个属性
     defineProperty(value, '__ob__', this)
     
@@ -38,7 +38,7 @@ class Observer {
 
 // 封装 继承
 function defineReactive (data, key, value) {
-  observe(value) // 如果是对象类型再进行观测(递归)
+  let childDep = observe(value) // 如果是对象类型再进行观测(递归)
   
   let dep = new Dep() // 每个属性都有一个dep
   
@@ -47,7 +47,11 @@ function defineReactive (data, key, value) {
     get () { // 依赖收集
       if (Dep.target) {
         dep.depend()
+        if (childDep) {
+          childDep.dep.depend()
+        }
       }
+      console.log('dep.subs', dep.subs)
       
       return value
     },
@@ -61,6 +65,7 @@ function defineReactive (data, key, value) {
 }
 
 export function observe (data) {
+  console.log('data -> ', data)
   // typeof null 也是 object
   // 不能不是对象 并且不是null
   if (typeof data !== 'object' || data == null) {

@@ -6,7 +6,6 @@ export function lifecycleMixin (Vue) {
     const vm = this
     // 用新创建的元素 替换老的vm.$el
     vm.$el = patch(vm.$el, vnode)
-    
   }
 }
 
@@ -21,6 +20,7 @@ export function mountComponent (vm, el) {
     vm._update(vm._render())
   }
   // 这个watcher是用于渲染的 目前没有任何功能 updateComponent()
+  
   new Watcher(vm, updateComponent, () => {
     callHook(vm, 'beforeUpdate')
   }, true)  // 渲染watcher 只是个名字
