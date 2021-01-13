@@ -2,7 +2,7 @@
 let oldArrayProtoMethods = Array.prototype
 
 // 继承一下
-export let arrayProtoMethods = Object.create(oldArrayProtoMethods)
+export let arrayMethods = Object.create(oldArrayProtoMethods)
 
 let methods = [
   'push',
@@ -15,9 +15,9 @@ let methods = [
 ]
 
 methods.forEach(method => {
-  arrayProtoMethods[method] = function (...args) {
+  arrayMethods[method] = function (...args) {
     // this就是observe里的value
-    const result = oldArrayProtoMethods[method].call(this, args)
+    const result = oldArrayProtoMethods[method].apply(this, args)
     let inserted
     let ob = this.__ob__
     switch (method) {

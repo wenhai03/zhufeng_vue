@@ -1,17 +1,16 @@
-import {arrayProtoMethods} from "./array"
+import {arrayMethods} from "./array"
 import {defineProperty} from "../util"
 
 class Observer {
   constructor (value) {
     // 使用defineProperty重新定义属性
-    
     // 判断一个对象是否被观测过看他有没有 __ob__这个属性
     defineProperty(value, '__ob__', this)
     
     if (Array.isArray(value)) {
       // 我希望调用push unshift splice reverse pop
       // 函数劫持 切片编程
-      value.__proto__ = arrayProtoMethods
+      value.__proto__ = arrayMethods
       // 观测数组中的对象类型，对象变化也要做一些事
       this.observeArray(value )
     } else {

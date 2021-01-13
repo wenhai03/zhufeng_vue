@@ -8,7 +8,7 @@
   let oldArrayProtoMethods = Array.prototype;
 
   // 继承一下
-  let arrayProtoMethods = Object.create(oldArrayProtoMethods);
+  let arrayMethods = Object.create(oldArrayProtoMethods);
 
   let methods = [
     'push',
@@ -21,9 +21,9 @@
   ];
 
   methods.forEach(method => {
-    arrayProtoMethods[method] = function (...args) {
+    arrayMethods[method] = function (...args) {
       // this就是observe里的value
-      const result = oldArrayProtoMethods[method].call(this, args);
+      const result = oldArrayProtoMethods[method].apply(this, args);
       let inserted;
       let ob = this.__ob__;
       switch (method) {
@@ -66,14 +66,13 @@
   class Observer {
     constructor (value) {
       // 使用defineProperty重新定义属性
-      
       // 判断一个对象是否被观测过看他有没有 __ob__这个属性
       defineProperty(value, '__ob__', this);
       
       if (Array.isArray(value)) {
         // 我希望调用push unshift splice reverse pop
         // 函数劫持 切片编程
-        value.__proto__ = arrayProtoMethods;
+        value.__proto__ = arrayMethods;
         // 观测数组中的对象类型，对象变化也要做一些事
         this.observeArray(value );
       } else {
