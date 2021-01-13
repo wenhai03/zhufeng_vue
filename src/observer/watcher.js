@@ -12,14 +12,29 @@ class Watcher {  // vm.$watch
     this.exprOrFn = exprOrFn
     this.cb = cb
     this.options = options
+    this.user = options.user // 这是一个用户watcher
+    this.isWatcher = options === true  // 是渲染watcher
+    
     this.id = id++ // watcher的唯一标识
     this.deps = [] // watcher记录有多少dep依赖他
     this.depsId = new Set()
     if (typeof exprOrFn === 'function') {
       this.getter = exprOrFn
+    } else {
+      this.getter = function() { // exprOrFn 可能传递过来的是一个字符串a
+        // 当去当前实例上取值时 才会触发依赖收集
+        let path = exprOrFn.split('.')  // ['a', 'a', 'a']
+        let obj = vm
+        for (let i = 0; i < path.length; i++) {
+          obj = obj[path[i]]
+        }
+        return  obj
+      }
     }
+    // 默认会先调用一次get方法 进行取值将结果保留下来
+    this.value = this.get() // 默认会调用get方法
     
-    this.get() // 默认会调用get方法
+    // console.log('this.value -> ', this.value)
   }
   
   addDep (dep) {
@@ -34,12 +49,19 @@ class Watcher {  // vm.$watch
   get () {
     // Dep.target = watcher
     pushTarget(this) // 当前watcher实例
-    this.getter()  // 调用exprOrFn 渲染页面 取值（执行了get方法）render方法  with(vm){_v(msg)}
+    let result = this.getter()  // 调用exprOrFn 渲染页面 取值（执行了get方法）render方法  with(vm){_v(msg)}
     popTarget()
+    
+    return result
   }
   
   run () {
-    this.get()
+    let newValue =  this.get() // 渲染逻辑
+    let oldValue =  this.value
+    this.value = newValue
+    if (this.user) {
+      this.cb.call(this.vm, newValue, oldValue)
+    }
   }
   
   update () {
@@ -57,7 +79,9 @@ let pending = false
 function flushScheduleQueue () {
   queue.forEach(watcher => {
     watcher.run()
-    watcher.cb()
+    if (watcher.isWatcher) {
+      watcher.cb()
+    }
   })
   queue = [] // 清空watcher队列为了下次使用
   has = {} // 清空标识的id

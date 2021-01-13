@@ -16,7 +16,7 @@ export default {
     serve({
       port: 3000,
       contentBase: '',
-      openPage: '/index.html', // 默认打开html的路径
+      openPage: '/watch.html', // 默认打开html的路径
   
     })
   ]

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+</head>
+<body>
+<script src="./dist/umd/vue.js"></script>
+
+<div id="app">
+  {{a}}
+</div>
+
+<script>
+  let vm = new Vue({
+    el: '#app',
+    data: {a:{a: {a: 11}}},
+    methods: {
+      aa() {
+        console.log('1000')
+      }
+    },
+    watch:{
+      // 1.直接key value
+      // 2.写成key  和 数组的方式
+      // 3.监控当前实例上的方法
+      // 4.handler的写法
+
+
+      // 'a'(newValue, oldValue) { // 对象没有老值  都是新的
+      //   console.log(newValue)
+      // },
+      // 'a': [
+      //   (newValue, oldValue) => { // 对象没有老值  都是新的
+      //     console.log(newValue)
+      //   },
+      //   (newValue, oldValue) => { // 对象没有老值  都是新的
+      //     console.log(newValue)
+      //   }
+      // ],
+      'a.a.a': {
+        handler(newValue, oldValue) {
+          console.log('newValue, oldValue -> ', newValue, oldValue)
+        },
+        // immediate: true,
+        // sync: true
+      }
+    }
+  });
+
+  vm.a.a.a = 100 // 会触发set方法 => set方法会调用watcher.run
+  // console.log(vm.a.a.a)
+  setTimeout(() => {
+    vm.a.a.a = 200
+  }, 1000)
+</script>
+</body>
+</html>
