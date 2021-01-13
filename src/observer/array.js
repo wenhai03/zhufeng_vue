@@ -15,8 +15,9 @@ let methods = [
 ]
 
 methods.forEach(method => {
-  arrayProtoMethods[method] = function (...args) {
-    // this就是observe里的value
+  arrayProtoMethods[method] = function (...args) {  // this就是observer里的value
+    // 当调用数组我们劫持后的7个方法 页面应该更新
+    // 我要知道数组对应哪个dep
     const result = oldArrayProtoMethods[method].call(this, args)
     let inserted
     let ob = this.__ob__
@@ -27,15 +28,14 @@ methods.forEach(method => {
         break
       case 'splice': // vue.$set原理
         inserted = args.slice(2) // arr.splice(0, 1, {a: 1})
-      default:
+      default:
         break;
     }
     if (inserted) {
       // 给数组新增的值也要进行观测
       ob.observeArray(inserted)
     }
-    
-    // console.log('数组方法被调用了')
+    ob.dep.notify() // 通知数组更新
     return result
   }
 })

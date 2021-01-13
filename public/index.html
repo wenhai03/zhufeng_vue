@@ -5,17 +5,19 @@
   <title>Title</title>
 </head>
 <body>
-
+<!--
+如果是对象数据类型 会做一个处理JSON.stringify()
+-->
 <div id="app" style="color: red">
-  <p style="color: blue">hello world zf</p>
-  <li>{{school.name}}</li>
-  <li>{{school.age}}</li>
+  <!--    通过数组更新索引和长度更新是无效的-->
+  <li>{{arr}}</li>
+
 </div>
 <script src="/dist/umd/vue.js"></script>
 
 <script>
 
-  // 混合 混入 全局混入
+  //
   Vue.mixin({  // Vue.options = { created: [a, b, c] }
     created: function a(){
       console.log('created...')
@@ -31,7 +33,7 @@
     el: '#app',
     data() {
       return {
-        arr: [1,2,3],
+        arr: [{a: 1},2,3],
         school: {name: 'zf', age: 10}
       }
     },
@@ -39,19 +41,25 @@
       console.log('my created')
     }
     // [created1, created2]
-
-
   });
- setTimeout(() => {
-   vm.school.name = 'zs'  // 重新调用 _render 在调用 _update
-   vm._update(vm._render())
 
-   // 数据变化 自动调用  vm._update(vm._render()) 就可以
-   // vue更新策略是以组件为单位的，给每个组件都增加了watcher，属性变化后重新调用这个watcher (渲染watcher)
- }, 1000)
   setTimeout(() => {
-    vm.school.name = 'jw'  // 重新调用 _render 在调用 _update
-  }, 2000)
+    vm.arr[0].a = 100
+  }, 1000)
+
+  // watcher和dep的互记 watcher去重 异步更新
+  // 组件的渲染 Vue.extend
+  // diff 算法  vue-router  vuex
+  // 计算属性 watch的实现
+
+  /*
+  * 1.我取arr的值 会调用get方法 我希望让当前数组记住这个渲染watcher
+  * 2.我给所有的对象类型都增加一个dep属性
+  * 3.当页面对arr取值时 我就让数组的dep记住这个watcher
+  * 等会我更新数组时 push shift 方法时 找到数组对应的watcher来更新
+  *
+  *
+  * */
 
 </script>
 </body>

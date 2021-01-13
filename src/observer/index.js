@@ -4,8 +4,8 @@ import Dep from "./dep"
 
 class Observer {
   constructor (value) {
+    this.dep = new Dep()  // value = {}  value = []
     // 使用defineProperty重新定义属性
-    
     // 判断一个对象是否被观测过看他有没有 __ob__这个属性
     defineProperty(value, '__ob__', this)
     
@@ -38,15 +38,19 @@ class Observer {
 
 // 封装 继承
 function defineReactive (data, key, value) {
-  observe(value) // 如果是对象类型再进行观测(递归)
-  
+  // 获取到数组对应的dep
+  let childDep = observe(value) // 如果是对象类型再进行观测(递归)
   let dep = new Dep() // 每个属性都有一个dep
   
   // 当页面取值时 说明这个值用来渲染了，将这个watcher和这个属性对应起来
   Object.defineProperty(data, key, {
     get () { // 依赖收集
-      if (Dep.target) {
+      if (Dep.target) { // 让这个属性记住这个watcher
         dep.depend()
+        if (typeof childDep) { // 可能是数组可能是对象
+          // 默认给数组增加了一个dep属性，当对数组这个对象取值的时候
+          childDep.dep.depend() // 数组存起来了这个渲染watcher
+        }
       }
       
       return value
@@ -55,7 +59,7 @@ function defineReactive (data, key, value) {
       if (newValue === value) return
       observe(newValue) // 如果用户将值改成对象继续监控
       value = newValue
-      dep.notify()
+      dep.notify() // 异步更新 防止频繁操作
     }
   })
 }

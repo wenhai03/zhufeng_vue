@@ -21,8 +21,9 @@
   ];
 
   methods.forEach(method => {
-    arrayProtoMethods[method] = function (...args) {
-      // this就是observe里的value
+    arrayProtoMethods[method] = function (...args) {  // this就是observer里的value
+      // 当调用数组我们劫持后的7个方法 页面应该更新
+      // 我要知道数组对应哪个dep
       const result = oldArrayProtoMethods[method].call(this, args);
       let inserted;
       let ob = this.__ob__;
@@ -38,8 +39,7 @@
         // 给数组新增的值也要进行观测
         ob.observeArray(inserted);
       }
-      
-      // console.log('数组方法被调用了')
+      ob.dep.notify(); // 通知数组更新
       return result
     };
   });
@@ -125,12 +125,20 @@
     return options
   }
 
+  let id = 0;
   class Dep{
     constructor(){
       this.subs = [];
+      this.id = id++;
     }
     depend() {
-      this.subs.push(Dep.target);
+      // 我们希望 watcher 可以存放dep
+      // 实现双向记忆的，让watcher记住dep 的同时，让dep也记住watcher
+      Dep.target.addDep(this);
+      // this.subs.push(Dep.target)
+    }
+    addSub(watcher) {
+      this.subs.push(watcher);
     }
     notify() {
       this.subs.forEach(watcher => watcher.update());
@@ -151,8 +159,8 @@
 
   class Observer {
     constructor (value) {
+      this.dep = new Dep();  // value = {}  value = []
       // 使用defineProperty重新定义属性
-      
       // 判断一个对象是否被观测过看他有没有 __ob__这个属性
       defineProperty(value, '__ob__', this);
       
@@ -185,15 +193,19 @@
 
   // 封装 继承
   function defineReactive (data, key, value) {
-    observe(value); // 如果是对象类型再进行观测(递归)
-    
+    // 获取到数组对应的dep
+    let childDep = observe(value); // 如果是对象类型再进行观测(递归)
     let dep = new Dep(); // 每个属性都有一个dep
     
     // 当页面取值时 说明这个值用来渲染了，将这个watcher和这个属性对应起来
     Object.defineProperty(data, key, {
       get () { // 依赖收集
-        if (Dep.target) {
+        if (Dep.target) { // 让这个属性记住这个watcher
           dep.depend();
+          if (typeof childDep) { // 可能是数组可能是对象
+            // 默认给数组增加了一个dep属性，当对数组这个对象取值的时候
+            childDep.dep.depend(); // 数组存起来了这个渲染watcher
+          }
         }
         
         return value
@@ -202,7 +214,7 @@
         if (newValue === value) return
         observe(newValue); // 如果用户将值改成对象继续监控
         value = newValue;
-        dep.notify();
+        dep.notify(); // 异步更新 防止频繁操作
       }
     });
   }
@@ -498,7 +510,7 @@
     
   }
 
-  let id = 0;
+  let id$1 = 0;
 
   class Watcher {  // vm.$watch
     // vm实例
@@ -508,20 +520,29 @@
       this.exprOrFn = exprOrFn;
       this.cb = cb;
       this.options = options;
-      this.id = id++; // watcher的唯一标识
-      
+      this.id = id$1++; // watcher的唯一标识
+      this.deps = []; // watcher记录有多少dep依赖他
+      this.depsId = new Set();
       if (typeof exprOrFn === 'function') {
         this.getter = exprOrFn;
       }
       
       this.get(); // 默认会调用get方法
     }
+    addDep(dep) {
+      let id = dep.id;
+      if (!this.depsId.has(id)) {
+        this.deps.push(dep);
+        this.depsId.add(id);
+        dep.addSub(this);
+      }
+    }
     
     get(){
       // Dep.target = watcher
       pushTarget(this); // 当前watcher实例
       this.getter();  // 调用exprOrFn 渲染页面 取值（执行了get方法）render方法  with(vm){_v(msg)}
-      popTarget();
+      popTarget(); // 渲染完成后 将watcher删掉
     }
     update() {
       this.get(); // 重新渲染
@@ -552,7 +573,7 @@
     
     // 初始化就会创建watcher
     let updateComponent = () => {
-      vm._update(vm._render());
+      vm._update(vm._render());  // 渲染、更新
     };
     // 这个watcher是用于渲染的 目前没有任何功能 updateComponent()
     new Watcher(vm, updateComponent, () => {

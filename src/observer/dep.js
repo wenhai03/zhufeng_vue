@@ -1,9 +1,18 @@
+
+let id = 0
 class Dep{
   constructor(){
     this.subs = []
+    this.id = id++
   }
   depend() {
-    this.subs.push(Dep.target)
+    // 我们希望 watcher 可以存放dep
+    // 实现双向记忆的，让watcher记住dep 的同时，让dep也记住watcher
+    Dep.target.addDep(this)
+    // this.subs.push(Dep.target)
+  }
+  addSub(watcher) {
+    this.subs.push(watcher)
   }
   notify() {
     this.subs.forEach(watcher => watcher.update())

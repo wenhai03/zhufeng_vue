@@ -11,19 +11,28 @@ class Watcher {  // vm.$watch
     this.cb = cb
     this.options = options
     this.id = id++ // watcher的唯一标识
-    
+    this.deps = [] // watcher记录有多少dep依赖他
+    this.depsId = new Set()
     if (typeof exprOrFn === 'function') {
       this.getter = exprOrFn
     }
     
     this.get() // 默认会调用get方法
   }
+  addDep(dep) {
+    let id = dep.id
+    if (!this.depsId.has(id)) {
+      this.deps.push(dep)
+      this.depsId.add(id)
+      dep.addSub(this)
+    }
+  }
   
   get(){
     // Dep.target = watcher
     pushTarget(this) // 当前watcher实例
     this.getter()  // 调用exprOrFn 渲染页面 取值（执行了get方法）render方法  with(vm){_v(msg)}
-    popTarget()
+    popTarget() // 渲染完成后 将watcher删掉
   }
   update() {
     this.get() // 重新渲染

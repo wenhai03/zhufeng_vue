@@ -18,7 +18,7 @@ export function mountComponent (vm, el) {
   
   // 初始化就会创建watcher
   let updateComponent = () => {
-    vm._update(vm._render())
+    vm._update(vm._render())  // 渲染、更新
   }
   // 这个watcher是用于渲染的 目前没有任何功能 updateComponent()
   new Watcher(vm, updateComponent, () => {
