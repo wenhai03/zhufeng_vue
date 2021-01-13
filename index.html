@@ -7,9 +7,7 @@
 <body>
 
 <div id="app" style="color: red">
-  <!--    通过数组更新索引和长度更新是无效的-->
   <li>{{arr}}</li>
-
 </div>
 <script src="/dist/umd/vue.js"></script>
 
@@ -41,23 +39,11 @@
     // [created1, created2]
 
 
-  setTimeout(() => {
-    // vm.arr[0].a = 100
-  }, 1000)
+  });
+ setTimeout(() => {
+   vm.arr.push(123)
+ }, 1000)
 
-  // watcher和dep的互记 watcher去重 异步更新
-  // 组件的渲染 Vue.extend
-  // diff 算法  vue-router  vuex
-  // 计算属性 watch的实现
-
-  /*
-  * 1.我取arr的值 会调用get方法 我希望让当前数组记住这个渲染watcher
-  * 2.我给所有的对象类型都增加一个dep属性
-  * 3.当页面对arr取值时 我就让数组的dep记住这个watcher
-  * 等会我更新数组时 push shift 方法时 找到数组对应的watcher来更新
-  *
-  *
-  * */
 
 </script>
 </body>

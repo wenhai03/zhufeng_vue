@@ -18,7 +18,7 @@ methods.forEach(method => {
   arrayProtoMethods[method] = function (...args) {  // this就是observer里的value
     // 当调用数组我们劫持后的7个方法 页面应该更新
     // 我要知道数组对应哪个dep
-    const result = oldArrayProtoMethods[method].call(this, args)
+    const result = oldArrayProtoMethods[method].apply(this, args)
     let inserted
     let ob = this.__ob__
     switch (method) {
