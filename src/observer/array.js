@@ -17,7 +17,7 @@ let methods = [
 methods.forEach(method => {
   arrayProtoMethods[method] = function (...args) {
     // this就是observe里的value
-    const result = oldArrayProtoMethods[method].call(this, args)
+    const result = oldArrayProtoMethods[method].apply(this, args)
     let inserted
     let ob = this.__ob__
     switch (method) {
