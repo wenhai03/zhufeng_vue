@@ -4,9 +4,9 @@ import serve from 'rollup-plugin-serve'
 export default {
   input: './src/index.js', // 以哪个文件作为打包入口
   output: {
+    format: 'umd', // 统一模块规范
     file: 'dist/umd/vue.js', // 出口路径
     name: 'Vue', // 指定打包后全局变量的名字
-    format: 'umd', // 统一模块规范
     sourcemap: true  // es6 => es5 开启源码调式 可以找到源代码报错位置
   },
   plugin: [ // 使用的插件
@@ -14,10 +14,10 @@ export default {
       exclude: 'node_modules/**'
     }),
     serve({
-      open: true,
-      openPage: 'public/index.html', // 默认打开html的路径
       port: 3000,
-      contentBase: ''
+      contentBase: '',
+      openPage: '/index.html', // 默认打开html的路径
+  
     })
   ]
   

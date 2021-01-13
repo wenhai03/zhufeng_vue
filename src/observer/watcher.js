@@ -32,7 +32,7 @@ class Watcher {  // vm.$watch
     // Dep.target = watcher
     pushTarget(this) // 当前watcher实例
     this.getter()  // 调用exprOrFn 渲染页面 取值（执行了get方法）render方法  with(vm){_v(msg)}
-    popTarget() // 渲染完成后 将watcher删掉
+    popTarget()
   }
   update() {
     this.get() // 重新渲染

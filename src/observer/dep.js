@@ -1,7 +1,7 @@
-
 let id = 0
-class Dep{
-  constructor(){
+
+class Dep {
+  constructor () {
     this.subs = []
     this.id = id++
   }
@@ -14,7 +14,8 @@ class Dep{
   addSub(watcher) {
     this.subs.push(watcher)
   }
-  notify() {
+  
+  notify () {
     this.subs.forEach(watcher => watcher.update())
   }
 }

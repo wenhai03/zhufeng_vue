@@ -5,9 +5,7 @@
   <title>Title</title>
 </head>
 <body>
-<!--
-如果是对象数据类型 会做一个处理JSON.stringify()
--->
+
 <div id="app" style="color: red">
   <!--    通过数组更新索引和长度更新是无效的-->
   <li>{{arr}}</li>
@@ -17,7 +15,7 @@
 
 <script>
 
-  //
+  // 混合 混入 全局混入
   Vue.mixin({  // Vue.options = { created: [a, b, c] }
     created: function a(){
       console.log('created...')
@@ -41,7 +39,7 @@
       console.log('my created')
     }
     // [created1, created2]
-  });
+
 
   setTimeout(() => {
     // vm.arr[0].a = 100

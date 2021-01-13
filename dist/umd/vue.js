@@ -159,8 +159,8 @@
 
   class Observer {
     constructor (value) {
-      this.dep = new Dep();  // value = {}  value = []
       // 使用defineProperty重新定义属性
+      
       // 判断一个对象是否被观测过看他有没有 __ob__这个属性
       defineProperty(value, '__ob__', this);
       
@@ -214,7 +214,7 @@
         if (newValue === value) return
         observe(newValue); // 如果用户将值改成对象继续监控
         value = newValue;
-        dep.notify(); // 异步更新 防止频繁操作
+        dep.notify();
       }
     });
   }
@@ -510,7 +510,7 @@
     
   }
 
-  let id$1 = 0;
+  let id = 0;
 
   class Watcher {  // vm.$watch
     // vm实例
@@ -520,29 +520,20 @@
       this.exprOrFn = exprOrFn;
       this.cb = cb;
       this.options = options;
-      this.id = id$1++; // watcher的唯一标识
-      this.deps = []; // watcher记录有多少dep依赖他
-      this.depsId = new Set();
+      this.id = id++; // watcher的唯一标识
+      
       if (typeof exprOrFn === 'function') {
         this.getter = exprOrFn;
       }
       
       this.get(); // 默认会调用get方法
     }
-    addDep(dep) {
-      let id = dep.id;
-      if (!this.depsId.has(id)) {
-        this.deps.push(dep);
-        this.depsId.add(id);
-        dep.addSub(this);
-      }
-    }
     
     get(){
       // Dep.target = watcher
       pushTarget(this); // 当前watcher实例
       this.getter();  // 调用exprOrFn 渲染页面 取值（执行了get方法）render方法  with(vm){_v(msg)}
-      popTarget(); // 渲染完成后 将watcher删掉
+      popTarget();
     }
     update() {
       this.get(); // 重新渲染
@@ -573,7 +564,7 @@
     
     // 初始化就会创建watcher
     let updateComponent = () => {
-      vm._update(vm._render());  // 渲染、更新
+      vm._update(vm._render());
     };
     // 这个watcher是用于渲染的 目前没有任何功能 updateComponent()
     new Watcher(vm, updateComponent, () => {

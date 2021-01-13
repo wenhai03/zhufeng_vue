@@ -45,7 +45,7 @@ function defineReactive (data, key, value) {
   // 当页面取值时 说明这个值用来渲染了，将这个watcher和这个属性对应起来
   Object.defineProperty(data, key, {
     get () { // 依赖收集
-      if (Dep.target) { // 让这个属性记住这个watcher
+      if (Dep.target) {
         dep.depend()
         if (childDep) { // 可能是数组可能是对象
           // 默认给数组增加了一个dep属性，当对数组这个对象取值的时候
@@ -59,7 +59,7 @@ function defineReactive (data, key, value) {
       if (newValue === value) return
       observe(newValue) // 如果用户将值改成对象继续监控
       value = newValue
-      dep.notify() // 异步更新 防止频繁操作
+      dep.notify()
     }
   })
 }
