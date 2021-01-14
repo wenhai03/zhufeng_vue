@@ -1,3 +1,4 @@
+
 export function patch (oldVnode, vnode) {
   // 默认初始化时 是直接用虚拟节点创建出真实节点来 替换掉老节点
   if (oldVnode.nodeType === 1) {
@@ -30,14 +31,68 @@ export function patch (oldVnode, vnode) {
     // 3.标签一样 并且需要开始比对标签的属性 和 儿子
     // 标签一个直接复用即可
     let el = vnode.el = oldVnode.el // 复用老节点
-    // 更新属性，用心的虚拟节点的属性和老的比较，去更新节点
     
+    // 更新属性，用心的虚拟节点的属性和老的比较，去更新节点
     // 新老属性的对比
     updateProperties(vnode, oldVnode.data)
-    console.log("o", oldVnode, vnode, oldVnode.el)
+    // 比较孩子
+    
+    let oldChildren = oldVnode.children || []
+    let newChildren = vnode.children || []
+    if (oldChildren.length > 0 && newChildren.length > 0) {
+      // 老的有儿子 新的也有儿子  diff算法
+      updateChildren(oldChildren, newChildren, el)
+    } else if (oldChildren.length > 0){  // 新的没有
+      el.innerHTML = ''
+    } else if (newChildren.length > 0) { // 老的没有
+      for (let i = 0; i < newChildren.length; i++) {
+        let child = newChildren[i]
+        // 浏览器有性能优化 不用子在搞文档碎片
+        el.appendChild(createElm(child))
+      }
+    }
+    // 儿子比较分为以下几种情况
+    // 老的有儿子 新的没有儿子
+    // 老的没儿子 新的有儿子
   }
+}
+
+function isSameVnode (oldVnode, newVnode) {
+  return (oldVnode.tag === newVnode.tag) && (oldVnode.key === newVnode.key)
+}
+
+// 儿子见的比较
+function updateChildren (oldChildren, newChildren, parent) {
+  let oldStartIndex = 0  // 老的索引
+  let oldStartVnode = oldChildren[0] // 老的索引指向的节点
+  let oldEndIndex = oldChildren.length - 1
+  let oldEndVnode = oldChildren[oldStartIndex]
   
+  let newStartIndex = 0  // 新的索引
+  let newStartVnode = newChildren[0] // 新的索引指向的节点
+  let newEndIndex = newChildren.length - 1
+  let newEndVnode = newChildren[newStartIndex]
   
+  // vue中的diff算法做了很多优化
+  // DOM中操作有很多常见的逻辑 把节点插入到当前儿子的头部，尾部，儿子倒叙正序
+  // vue2中采用的是双指针的方式
+  
+  // 在尾部添加
+  
+  // 我要做一个循环 同时循环老的和新的，哪个先结束 循环就停止 将多余的删除或者添加进去
+  // 比较水先循环停止
+  while(oldStartIndex <= oldEndIndex && newStartIndex <= newEndIndex) {
+    if (isSameVnode(oldStartVnode, newStartVnode)) { // 如果两个人是同一个元素，对比儿子
+      patch(oldStartVnode, newStartVnode) // 更新属性和再去递归更新子节点
+      oldStartVnode = oldChildren[++oldStartIndex]
+      newStartVnode =  newChildren[++newStartIndex]
+    }
+  }
+  if (newStartIndex <= newEndIndex) {
+    for (let i = newStartIndex; i <= newEndIndex; i++) {
+      parent.appendChild(createElm(newChildren[i]))
+    }
+  }
   
 }
 
