@@ -1,4 +1,3 @@
-
 export function patch (oldVnode, vnode) {
   // 默认初始化时 是直接用虚拟节点创建出真实节点来 替换掉老节点
   if (oldVnode.nodeType === 1) {
@@ -6,7 +5,7 @@ export function patch (oldVnode, vnode) {
     let parentElm = oldVnode.parentNode // 获取老的app的父亲 => body
     parentElm.insertBefore(el, oldVnode.nextSibling) // 当前的真实元素插入到app的后面
     parentElm.removeChild(oldVnode) // 删除老的节点
-  
+    
     // let el = createElm(vnode)
     return el
   } else {
@@ -17,7 +16,7 @@ export function patch (oldVnode, vnode) {
     // 1.比较两个元素的标签，标签不一样直接替换即可
     if (oldVnode.tag !== vnode.tag) {
       // 老的dom元素
-      return oldVnode.el.parentNode.replaceChild(createElm(vnode),  oldVnode.el)
+      return oldVnode.el.parentNode.replaceChild(createElm(vnode), oldVnode.el)
     }
     
     // 2.有种可能是标签一样 <div>1</div>  <div>2</div>
@@ -27,7 +26,7 @@ export function patch (oldVnode, vnode) {
         return oldVnode.el.textContent = vnode.text
       }
     }
-  
+    
     // 3.标签一样 并且需要开始比对标签的属性 和 儿子
     // 标签一个直接复用即可
     let el = vnode.el = oldVnode.el // 复用老节点
@@ -42,7 +41,7 @@ export function patch (oldVnode, vnode) {
     if (oldChildren.length > 0 && newChildren.length > 0) {
       // 老的有儿子 新的也有儿子  diff算法
       updateChildren(oldChildren, newChildren, el)
-    } else if (oldChildren.length > 0){  // 新的没有
+    } else if (oldChildren.length > 0) {  // 新的没有
       el.innerHTML = ''
     } else if (newChildren.length > 0) { // 老的没有
       for (let i = 0; i < newChildren.length; i++) {
@@ -81,25 +80,36 @@ function updateChildren (oldChildren, newChildren, parent) {
   
   // 我要做一个循环 同时循环老的和新的，哪个先结束 循环就停止 将多余的删除或者添加进去
   // 比较水先循环停止
-  while(oldStartIndex <= oldEndIndex && newStartIndex <= newEndIndex) {
+  while (oldStartIndex <= oldEndIndex && newStartIndex <= newEndIndex) {
     if (isSameVnode(oldStartVnode, newStartVnode)) { // 如果两个人是同一个元素，对比儿子
       patch(oldStartVnode, newStartVnode) // 更新属性和再去递归更新子节点
       oldStartVnode = oldChildren[++oldStartIndex]
-      newStartVnode =  newChildren[++newStartIndex]
+      newStartVnode = newChildren[++newStartIndex]
     } else if (isSameVnode(oldEndVnode, newEndVnode)) {
       patch(oldEndVnode, newEndVnode)
       oldEndVnode = oldChildren[--oldEndIndex]
-      newEndVnode =  newChildren[--newEndIndex]
-    }
+      newEndVnode = newChildren[--newEndIndex]
+    } /*else if (isSameVnode(oldStartVnode, newEndVnode)) { // 老的尾部和新的头部比较
+      // 将当前元素插入到尾部的 下一个元素的前面
+      patch(oldStartVnode, newEndVnode)
+      parent.insertBefore(oldStartVnode.el, oldEndVnode.el.nextSibling)
+      oldStartVnode = oldChildren[++oldStartIndex]
+      newEndVnode = newChildren[--newEndIndex]
+    }else if (isSameVnode(oldEndVnode, newStartVnode)) {
+      patch(oldEndVnode, newStartVnode)
+      parent.insertBefore(oldEndVnode.el, oldStartVnode.el.nextSibling)
+      oldEndVnode = oldChildren[++oldEndIndex]
+      newStartVnode = newChildren[--newStartIndex]
+    }*/
   }
   if (newStartIndex <= newEndIndex) {
     for (let i = newStartIndex; i <= newEndIndex; i++) {
       // 将新的多余插入进去即可，可能是向前添加，还有可能是向后添加
       // parent.appendChild(createElm(newChildren[i]))
-
+      
       // 向后插入 ele = null
       // 向前插入 ele 就是当前项是谁前面插入
-      let ele = newChildren[newEndIndex + 1 ] == null ? null : newChildren[newEndIndex].el
+      let ele = newChildren[newEndIndex + 1] == null ? null : newChildren[newEndIndex].el
       parent.insertBefore(createElm(newChildren[i]), ele)
     }
   }
@@ -123,7 +133,7 @@ export function createElm (vnode) {
   return vnode.el
 }
 
-function updateProperties (vnode, oldProps={}) {
+function updateProperties (vnode, oldProps = {}) {
   let newProps = vnode.data || {}
   let el = vnode.el
   
