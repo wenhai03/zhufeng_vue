@@ -41,7 +41,7 @@ export function patch (oldVnode, vnode) {
   
 }
 
-export function createElm (vnode, oldProps={}) {
+export function createElm (vnode) {
   let {tag, children, key, data, text} = vnode
   if (typeof tag == 'string') { // 创建元素 放到vnode上
     vnode.el = document.createElement(tag)
@@ -58,7 +58,7 @@ export function createElm (vnode, oldProps={}) {
   return vnode.el
 }
 
-function updateProperties (vnode) {
+function updateProperties (vnode, oldProps={}) {
   let newProps = vnode.data || {}
   let el = vnode.el
   
@@ -71,8 +71,14 @@ function updateProperties (vnode) {
   // 样式处理 老的 style={color: red} 新的 style={background:red}
   let newStyle = newProps.style || {}
   let oldStyle = oldProps.style || {}
-  // 新的有 那就直接用心的去做更新即可
+  // 老的样式中有 新的没有 删除老的样式
+  for (let key in oldStyle) {
+    if (!newStyle[key]) {
+      el.style[key] = ''
+    }
+  }
   
+  // 新的有 那就直接用心的去做更新即可
   for (let key in newProps) {
     if (key === 'style') {
       for (let styleName in newProps.style) {
@@ -84,5 +90,4 @@ function updateProperties (vnode) {
       el.setAttribute(key, newProps[key])
     }
   }
-  
 }

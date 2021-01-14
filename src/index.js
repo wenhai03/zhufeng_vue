@@ -24,16 +24,19 @@ initGlobalApi(Vue)
 import {compileToFunctions} from './compiler/index'
 import {createElm, patch} from './vdom/patch'
 let vm1 = new Vue({data: {name: 'zf'}})
-let render1 = compileToFunctions(`<p id="a">{{name}}</p>`)
+let render1 = compileToFunctions(`<p id="a" style="color: red" aa="a">{{name}}</p>`)
 let vnode1 = render1.call(vm1)
 
 document.body.appendChild(createElm(vnode1))
 
 let vm2 = new Vue({data: {name: 'jw'}})
-let render2 = compileToFunctions(`<div id="b">{{name}}</div>`)
+let render2 = compileToFunctions(`<div id="b" style="color: blue;" aa="b">{{name}}</div>`)
 let vnode2 = render2.call(vm2)
 
 // 用新的虚拟节点对比老的虚拟节点，找到差异 去更新老的dom元素
-patch(vnode1, vnode2) // 传入新的节点
+
+setTimeout(() => {
+  patch(vnode1, vnode2) // 传入新的节点
+}, 1000)
 
 export default Vue
