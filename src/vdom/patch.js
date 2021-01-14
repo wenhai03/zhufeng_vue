@@ -66,12 +66,12 @@ function updateChildren (oldChildren, newChildren, parent) {
   let oldStartIndex = 0  // 老的索引
   let oldStartVnode = oldChildren[0] // 老的索引指向的节点
   let oldEndIndex = oldChildren.length - 1
-  let oldEndVnode = oldChildren[oldStartIndex]
+  let oldEndVnode = oldChildren[oldEndIndex]
   
   let newStartIndex = 0  // 新的索引
   let newStartVnode = newChildren[0] // 新的索引指向的节点
   let newEndIndex = newChildren.length - 1
-  let newEndVnode = newChildren[newStartIndex]
+  let newEndVnode = newChildren[newEndIndex]
   
   // vue中的diff算法做了很多优化
   // DOM中操作有很多常见的逻辑 把节点插入到当前儿子的头部，尾部，儿子倒叙正序
