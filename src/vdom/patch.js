@@ -90,6 +90,17 @@ function updateChildren (oldChildren, newChildren, parent) {
       patch(oldEndVnode, newEndVnode)
       oldEndVnode = oldChildren[--oldEndIndex]
       newEndVnode =  newChildren[--newEndIndex]
+    } else if (isSameVnode(oldStartVnode, newEndVnode)) { // 老的尾部和新的头部比较
+      // 将当前元素插入到尾部的 下一个元素的前面
+      patch(oldStartVnode, newEndVnode)
+      parent.insertBefore(oldStartVnode.el, oldEndVnode.el.nextSibling)
+      oldStartVnode = oldChildren[++oldStartIndex]
+      newEndVnode = newChildren[--newEndIndex]
+    }else if (isSameVnode(oldEndVnode, newStartVnode)) {
+      patch(oldEndVnode, newStartVnode)
+      parent.insertBefore(oldEndVnode.el, oldStartVnode.el)
+      oldEndVnode = oldChildren[--oldEndIndex]
+      newStartVnode = newChildren[++newStartIndex]
     }
   }
   if (newStartIndex <= newEndIndex) {

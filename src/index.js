@@ -36,11 +36,10 @@ document.body.appendChild(createElm(vnode1))
 
 let vm2 = new Vue({data: {name: 'jw'}})
 let render2 = compileToFunctions(`<div id="b" style="color: blue;" class="b">
-<li style="background: orange" key="E">E</li>
-<li style="background: orange" key="A">AAAAAA</li>
-<li style="background: yellow" key="B">B</li>
-<li style="background: pink" key="C">C</li>
 <li style="background: green" key="D">D</li>
+<li style="background: pink" key="C">C</li>
+<li style="background: yellow" key="B">B</li>
+<li style="background: orange" key="A">A</li>
 </div>`)
 let vnode2 = render2.call(vm2)
 
