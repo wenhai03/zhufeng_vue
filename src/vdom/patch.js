@@ -66,12 +66,12 @@ function updateChildren (oldChildren, newChildren, parent) {
   let oldStartIndex = 0  // 老的索引
   let oldStartVnode = oldChildren[0] // 老的索引指向的节点
   let oldEndIndex = oldChildren.length - 1
-  let oldEndVnode = oldChildren[oldStartIndex]
+  let oldEndVnode = oldChildren[oldEndIndex]
   
   let newStartIndex = 0  // 新的索引
   let newStartVnode = newChildren[0] // 新的索引指向的节点
   let newEndIndex = newChildren.length - 1
-  let newEndVnode = newChildren[newStartIndex]
+  let newEndVnode = newChildren[newEndIndex]
   
   // vue中的diff算法做了很多优化
   // DOM中操作有很多常见的逻辑 把节点插入到当前儿子的头部，尾部，儿子倒叙正序
@@ -86,11 +86,21 @@ function updateChildren (oldChildren, newChildren, parent) {
       patch(oldStartVnode, newStartVnode) // 更新属性和再去递归更新子节点
       oldStartVnode = oldChildren[++oldStartIndex]
       newStartVnode =  newChildren[++newStartIndex]
+    } else if (isSameVnode(oldEndVnode, newEndVnode)) {
+      patch(oldEndVnode, newEndVnode)
+      oldEndVnode = oldChildren[--oldEndIndex]
+      newEndVnode =  newChildren[--newEndIndex]
     }
   }
   if (newStartIndex <= newEndIndex) {
     for (let i = newStartIndex; i <= newEndIndex; i++) {
-      parent.appendChild(createElm(newChildren[i]))
+      // 将新的多余插入进去即可，可能是向前添加，还有可能是向后添加
+      // parent.appendChild(createElm(newChildren[i]))
+
+      // 向后插入 ele = null
+      // 向前插入 ele 就是当前项是谁前面插入
+      let ele = newChildren[newEndIndex + 1 ] == null ? null : newChildren[newEndIndex].el
+      parent.insertBefore(createElm(newChildren[i]), ele)
     }
   }
   
