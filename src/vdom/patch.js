@@ -80,8 +80,26 @@ function updateChildren (oldChildren, newChildren, parent) {
   
   // 我要做一个循环 同时循环老的和新的，哪个先结束 循环就停止 将多余的删除或者添加进去
   // 比较水先循环停止
+  function makeIndexByKey(children) {
+    let map = {}
+    children.forEach((item, index) => {
+      if (item.key) {
+        map[item.key] = index // {A: 0, B: 1, C: 2, D: 3}
+      }
+    })
+    
+    return map
+  }
+  
+  let map = makeIndexByKey(oldChildren)
+  console.log('map -> ', map)
+  
   while (oldStartIndex <= oldEndIndex && newStartIndex <= newEndIndex) {
-    if (isSameVnode(oldStartVnode, newStartVnode)) { // 如果两个人是同一个元素，对比儿子
+    if (!oldStartVnode) { // 指针指向了null 跳过这次的处理
+      oldStartVnode = oldChildren[++oldStartIndex]
+    } else if (!oldEndVnode) {
+      oldEndVnode = oldChildren[--oldEndIndex]
+    } else if (isSameVnode(oldStartVnode, newStartVnode)) { // 如果两个人是同一个元素，对比儿子
       patch(oldStartVnode, newStartVnode) // 更新属性和再去递归更新子节点
       oldStartVnode = oldChildren[++oldStartIndex]
       newStartVnode = newChildren[++newStartIndex]
@@ -100,7 +118,23 @@ function updateChildren (oldChildren, newChildren, parent) {
       parent.insertBefore(oldEndVnode.el, oldStartVnode.el.nextSibling)
       oldEndVnode = oldChildren[--oldEndIndex]
       newStartVnode = newChildren[++newStartIndex]
+    } else {
+      // 儿子之间没有关系，暴力对比
+      let moveIndex = map[newStartVnode.key] // 拿到开头的虚拟节点的key 去老的中找
+      
+      if (moveIndex === undefined) {
+        parent.insertBefore(createElm(newStartVnode), oldStartVnode.el)
+      } else {
+        let moveVnode = oldChildren[moveIndex] // 这个老的虚拟节点需要移动
+        oldChildren[moveIndex] = null
+        parent.insertBefore(moveVnode.el, oldStartVnode.el)
+        patch(moveVnode, newStartVnode) // 比较属性和儿子
+      }
+      newStartVnode = newChildren[++newStartIndex] // 用新的不停的去老的里面找
     }
+    
+    // 为什么要有key，循环的时候为什么不能用index作为key
+    
   }
   if (newStartIndex <= newEndIndex) {
     for (let i = newStartIndex; i <= newEndIndex; i++) {
@@ -111,6 +145,16 @@ function updateChildren (oldChildren, newChildren, parent) {
       // 向前插入 ele 就是当前项是谁前面插入
       let ele = newChildren[newEndIndex + 1] == null ? null : newChildren[newEndIndex].el
       parent.insertBefore(createElm(newChildren[i]), ele)
+    }
+  }
+  
+  // 老的节点还没处理的，说明这些老节点是不需要的节点，如果这个里面有null说明这个节点已经被处理过了，跳过即可
+  if (oldStartIndex <= oldEndIndex) {
+    for (let i = oldStartIndex; i <= oldEndIndex ; i++) {
+      let child = oldChildren[i];
+      if (child != undefined) {
+        parent.removeChild(child.el)
+      }
     }
   }
   

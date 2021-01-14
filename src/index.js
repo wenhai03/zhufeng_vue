@@ -24,11 +24,12 @@ initGlobalApi(Vue)
 import {compileToFunctions} from './compiler/index'
 import {createElm, patch} from './vdom/patch'
 let vm1 = new Vue({data: {name: 'zf'}})
-let render1 = compileToFunctions(`<div id="a" style="color: red" class="a">
+let render1 = compileToFunctions(`<div id="a" class="a">
 <li style="background: orange" key="A">A</li>
 <li style="background: yellow" key="B">B</li>
 <li style="background: pink" key="C">C</li>
-<li style="background: green" key="D">D</li>
+<li style="background: darkcyan" key="D">D</li>
+<li style="background: green" key="F">F</li>
 </div>`)
 let vnode1 = render1.call(vm1)
 
@@ -36,10 +37,10 @@ document.body.appendChild(createElm(vnode1))
 
 let vm2 = new Vue({data: {name: 'jw'}})
 let render2 = compileToFunctions(`<div id="b" style="color: blue;" class="b">
-<li style="background: green" key="D">D</li>
-<li style="background: pink" key="C">C</li>
+<li style="background: green" key="M">M</li>
 <li style="background: yellow" key="B">B</li>
 <li style="background: orange" key="A">A</li>
+<li style="background: yellow" key="Q">Q</li>
 </div>`)
 let vnode2 = render2.call(vm2)
 
