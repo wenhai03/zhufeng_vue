@@ -7,17 +7,22 @@
 <body>
 
 <div id="app" >
-
+  <span>哈哈哈</span>
+  <p>{{name}}</p>
 </div>
 <script src="/dist/umd/vue.js"></script>
 
 <script>
+  let vm = new Vue({
+    el: '#app',
+    data: {
+      name: 'zf'
+    }
+  });
 
-  // console.log(app)
-  // for (const appKey in app) {
-  //   console.log(appKey)
-  // }
-
+  setTimeout(() => {
+     vm.name = 'jw';
+  }, 3000)
 
 </script>
 </body>

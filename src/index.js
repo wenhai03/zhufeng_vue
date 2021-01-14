@@ -21,7 +21,7 @@ initGlobalApi(Vue)
 // 初始方法
 
 // 为了看到diff的整个流程 创建两个虚拟节点来进行对比操作
-import {compileToFunctions} from './compiler/index'
+/*import {compileToFunctions} from './compiler/index'
 import {createElm, patch} from './vdom/patch'
 let vm1 = new Vue({data: {name: 'zf'}})
 let render1 = compileToFunctions(`<div id="a" class="a">
@@ -48,6 +48,6 @@ let vnode2 = render2.call(vm2)
 
 setTimeout(() => {
   patch(vnode1, vnode2) // 传入新的节点
-}, 1000)
+}, 1000)*/
 
 export default Vue
