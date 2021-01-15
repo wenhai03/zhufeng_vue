@@ -13,6 +13,8 @@ class Watcher {  // vm.$watch
     this.cb = cb
     this.options = options
     this.user = options.user // 这是一个用户watcher
+    this.lazy = options.lazy // 如果watcher上有lazy属性 说明是一个计算属性
+    this.dirty = options.lazy  // dirty代表取值时是否执行用户提供的方法
     this.isWatcher = options === true  // 是渲染watcher
     
     this.id = id++ // watcher的唯一标识
@@ -32,7 +34,7 @@ class Watcher {  // vm.$watch
       }
     }
     // 默认会先调用一次get方法 进行取值将结果保留下来
-    this.value = this.get() // 默认会调用get方法
+    this.value = this.lazy ? void 0 : this.get() // 默认会调用get方法
     
     // console.log('this.value -> ', this.value)
   }
@@ -49,7 +51,7 @@ class Watcher {  // vm.$watch
   get () {
     // Dep.target = watcher
     pushTarget(this) // 当前watcher实例
-    let result = this.getter()  // 调用exprOrFn 渲染页面 取值（执行了get方法）render方法  with(vm){_v(msg)}
+    let result = this.getter.call(this.vm)  // 调用exprOrFn 渲染页面 取值（执行了get方法）render方法  with(vm){_v(msg)}
     popTarget()
     
     return result
@@ -65,9 +67,19 @@ class Watcher {  // vm.$watch
   }
   
   update () {
-    // 这里不要每次都调用get方法  get方法会重新渲染页面
-    queueWatcher(this) // 暂存的概念
-    // this.get() // 重新渲染
+    if (this.lazy) {
+      this.dirty = true  // 页面重新渲染就可以获得最新的值了
+    } else {
+      // 这里不要每次都调用get方法  get方法会重新渲染页面
+      queueWatcher(this) // 暂存的概念
+      // this.get() // 重新渲染
+    }
+    
+  }
+  
+  evaluate() {
+    this.value = this.get()
+    this.dirty = false
   }
 }
 

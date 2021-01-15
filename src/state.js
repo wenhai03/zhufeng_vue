@@ -68,25 +68,44 @@ function initComputed (vm) {
   
   for (let key in computed) {
     const userDef = computed[key] // 取出对于你的值来
+    // 获取get方法
     const getter = typeof userDef === 'function' ? userDef : userDef.get // watcher使用的
-    // defineReactive()
-    defineComputed(vm, key, userDef)
+    watchers[key] = new Watcher(vm, getter, ()=> {}, {lazy: true})
+    defineComputed(vm, key, userDef)  // defineReactive()
   }
   
   
   console.log('computed', computed)
 }
-const sharedPropertyDefinition = {}
 function defineComputed(target, key, userDef) {  // 这样写是没缓存的
+  const sharedPropertyDefinition = {
+    enumerable: true,
+    configurable: true,
+    get: () => {},
+    set: () => {},
+  }
+  
   if (typeof userDef == 'function') {
-    sharedPropertyDefinition.get = userDef
+    sharedPropertyDefinition.get = createComputedGetter(key)
   } else {
-    sharedPropertyDefinition.get = userDef.get  // 需要加缓存
+    sharedPropertyDefinition.get = createComputedGetter(key) // 需要加缓存
     sharedPropertyDefinition.set = userDef.set
   }
   
   Object.defineProperty(target, key,sharedPropertyDefinition)
 
+}
+function createComputedGetter (key) {
+  return function () {  // 此方法是我们包装的方法 每次取值会调用此方法
+    const watcher = this._computedWathcers[key] // 拿到这个属性对应watcher
+    if (watcher) {
+      if (watcher.dirty) { // 默认肯定是脏的
+        watcher.evaluate() // 当当前的watcher求值
+      }
+      return watcher.value
+    }
+    
+  }
 }
 
 function initProps (vm) {
