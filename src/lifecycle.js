@@ -8,7 +8,6 @@ export function lifecycleMixin (Vue) {
     vm.$el = patch(vm.$el, vnode)
     const prevVnode = vm._vnode // 如果第一次 _vnode不存在
     if (!prevVnode) {
-      console.log('11 -> ')
       // 这里需要区分一下 到底是首次渲染还是更新
       // 用新创建的元素 替换老的vm.$el
       vm.$el = patch(vm.$el, vnode)

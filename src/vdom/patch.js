@@ -121,7 +121,7 @@ function updateChildren (oldChildren, newChildren, parent) {
     } else {
       // 儿子之间没有关系，暴力对比
       let moveIndex = map[newStartVnode.key] // 拿到开头的虚拟节点的key 去老的中找
-      
+      console.log('moveIndex -> ', moveIndex)
       if (moveIndex === undefined) {
         parent.insertBefore(createElm(newStartVnode), oldStartVnode.el)
       } else {

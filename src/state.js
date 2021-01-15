@@ -62,9 +62,32 @@ function createWatcher(vm, exprOrFn, handler, options) {  // options可以用来
 }
 
 function initComputed (vm) {
+  const computed = vm.$options.computed
+  // 1.需要watcher 2.还需要通过defineProperty 3.dirty
+  const watchers = vm._computedWathcers = {}
+  
+  for (let key in computed) {
+    const userDef = computed[key] // 取出对于你的值来
+    const getter = typeof userDef === 'function' ? userDef : userDef.get // watcher使用的
+    // defineReactive()
+    defineComputed(vm, key, userDef)
+  }
+  
+  
+  console.log('computed', computed)
+}
+const sharedPropertyDefinition = {}
+function defineComputed(target, key, userDef) {  // 这样写是没缓存的
+  if (typeof userDef == 'function') {
+    sharedPropertyDefinition.get = userDef
+  } else {
+    sharedPropertyDefinition.get = userDef.get  // 需要加缓存
+    sharedPropertyDefinition.set = userDef.set
+  }
+  
+  Object.defineProperty(target, key,sharedPropertyDefinition)
 
 }
-
 
 function initProps (vm) {
 

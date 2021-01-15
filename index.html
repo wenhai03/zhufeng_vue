@@ -16,13 +16,30 @@
   let vm = new Vue({
     el: '#app',
     data: {
-      name: 'zf'
+      name: 'zf',
+      firstName: '张',
+      lastName: '三',
+    },
+    computed: { // 内部也使用了defineProperty，内部有一个变量 dirty
+      // computed还是一个watcher，内部依赖的属性会收集这个watcher
+      fullName(){
+        console.log('会执行吗 -> ')
+        return this.firstName + this.lastName
+      },
+
+      // fullName: {
+      //   get() {  // defineProperty中的get方法
+      //
+      //   },
+      //   set() { // defineProperty中的set方法
+      //
+      //   },
+      // }
     }
   });
+  vm.fullName
+  vm.fullName
 
-  setTimeout(() => {
-     vm.name = 'jw';
-  }, 3000)
 
 </script>
 </body>
