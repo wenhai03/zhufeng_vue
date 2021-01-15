@@ -81,6 +81,15 @@ class Watcher {  // vm.$watch
     this.value = this.get()
     this.dirty = false
   }
+  
+  depend() {
+    // 计算属性watcher 会存储dep  dep会存储watcher
+    // 通过watcher找到对应的所有dep，让所有的dep都记住这个渲染watcher
+    let i = this.deps.length
+    while(i--){
+      this.deps[i].depend() // 让dep去存储渲染watcher
+    }
+  }
 }
 
 let queue = [] // 将需要批量更新的watcher 存早一个队列汇总，稍后让watcher执行

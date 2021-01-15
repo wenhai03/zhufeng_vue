@@ -21,11 +21,15 @@ class Dep {
 }
 
 Dep.target = null // 静态属性 就一份
+let stack = []
 export function pushTarget(watcher){
   Dep.target = watcher // 保留watcher
+  stack.push(watcher) // 有渲染watcher 其他的watcher
+  console.log('stack', stack)
 }
 export function popTarget(){
-  Dep.target = null  // 将变量删除掉
+  stack.pop()
+  Dep.target = stack[stack.length-1]  // 将变量删除掉
 }
 
 export default Dep

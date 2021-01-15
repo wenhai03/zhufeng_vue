@@ -8,7 +8,7 @@
 
 <div id="app" >
   <span>哈哈哈</span>
-  <p>{{name}}</p>
+  <p>{{fullName}}</p>
 </div>
 <script src="/dist/umd/vue.js"></script>
 
@@ -23,24 +23,16 @@
     computed: { // 内部也使用了defineProperty，内部有一个变量 dirty
       // computed还是一个watcher，内部依赖的属性会收集这个watcher
       fullName(){
-        console.log('会执行吗 -> ')
+        // console.log('会执行吗 -> ')
         return this.firstName + this.lastName
       },
-
-      // fullName: {
-      //   get() {  // defineProperty中的get方法
-      //
-      //   },
-      //   set() { // defineProperty中的set方法
-      //
-      //   },
-      // }
     }
   });
-  console.log(vm.fullName)
-  console.log(vm.fullName)
-  vm.firstName = '李'
-  console.log(vm.fullName)
+
+
+  setTimeout(() => {
+    vm.firstName = '李'
+  }, 1000)
 
 
 </script>

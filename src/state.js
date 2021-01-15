@@ -1,6 +1,7 @@
 import {observe} from "./observer/index"
 import {nextTick, proxy} from "./util"
 import Watcher from "./observer/watcher"
+import Dep from "./observer/dep"
 
 export function initState (vm) {
   const opts = vm.$options
@@ -101,6 +102,9 @@ function createComputedGetter (key) {
     if (watcher) {
       if (watcher.dirty) { // 默认肯定是脏的
         watcher.evaluate() // 当当前的watcher求值
+      }
+      if (Dep.target) { // 说明还有渲染watcher 也应该一并收集起来
+        watcher.depend()
       }
       return watcher.value
     }
