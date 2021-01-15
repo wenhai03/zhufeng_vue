@@ -106,7 +106,6 @@ function updateChildren (oldChildren, newChildren, parent) {
     for (let i = newStartIndex; i <= newEndIndex; i++) {
       // 将新的多余插入进去即可，可能是向前添加，还有可能是向后添加
       // parent.appendChild(createElm(newChildren[i]))
-      
       // 向后插入 ele = null
       // 向前插入 ele 就是当前项是谁前面插入
       let ele = newChildren[newEndIndex + 1] == null ? null : newChildren[newEndIndex].el
