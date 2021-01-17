@@ -29,9 +29,18 @@ export const LIFECYCLE_HOOKS = [
 ]
 
 const strats = {}
-strats.data = function (parentVal, childValue) {
+strats.components = function (parentVal, childVal) {
+  const res = Object.create(parentVal)  // res.__proto__ = parentVal
+  if (childVal) {
+    for (let key in childVal) {
+      res[key] = childVal[key]
+    }
+  }
+  return res
+}
+strats.data = function (parentVal, childVal) {
   // 这里应该有合并 data 的策略
-  return childValue
+  return childVal
 }
 // strats.computed = function () {}
 // strats.watch = function () {}
@@ -74,7 +83,11 @@ export function mergeOptions (parent, child) {
       options[key] = strats[key](parent[key], child[key])
     } else {
       // todo默认合并
-      options[key] = child[key]
+      if (child[key]) {
+        options[key] = child[key]
+      } else {
+        options[key] = parent[key]
+      }
     }
   }
   
@@ -122,3 +135,18 @@ export function nextTick (cb) { // 因为内部会调用nextTick 用户也会调
     pending = true
   }
 }
+
+function makeMap(str) {
+  const mapping = {}
+  const list = str.split(',')
+  for (let i = 0; i < list.length; i++) {
+    mapping[list[i]] = true
+  }
+  return (key) => { // 判断这个标签名是不是原生标签
+    return mapping[key]
+  }
+}
+
+export const isReservedTag = makeMap(
+  'a,div,img,image,text,span,p,button,input,textarea,select,ul,li'
+)

@@ -7,34 +7,46 @@
 <body>
 
 <div id="app" >
-  <span>哈哈哈</span>
-  <p>{{fullName}}</p>
+  <span>哈哈哈11</span>
 </div>
-<script src="/dist/umd/vue.js"></script>
+<script src="./dist/umd/vue.js"></script>
 
 <script>
+  /*
+  * 为什么要拆分成小的组件
+  * 1)实现复用
+  * 2)方便维护
+  * 3)编写组件能拆分尽量拆分vue的更新为题 每个组件一个watcher  可以减少比对
+  *
+  * */
+
+  // 全局组件
+  Vue.component('my-button', { // vue.extend
+    template: `<button>点我啊</button>`
+  })
+  Vue.component('aa', { // vue.extend
+    template: `<button>点我啊</button>`
+  })
+  // 组件的合并策略，就近策略 我们可以将全局组件放到原型链上
   let vm = new Vue({
     el: '#app',
+    components: {
+      aa: {
+        template: `<div>hello</div>`
+      },
+      bb: {
+        template: `<div>world</div>`
+      }
+    },
     data: {
       name: 'zf',
       firstName: '张',
       lastName: '三',
     },
-    computed: { // 内部也使用了defineProperty，内部有一个变量 dirty
-      // computed还是一个watcher，内部依赖的属性会收集这个watcher
-      fullName(){
-        // console.log('会执行吗 -> ')
-        return this.firstName + this.lastName
-      },
-    }
   });
 
+  console.log('vm -> ', vm)
 
-  setTimeout(() => {
-    vm.firstName = '李'
-  }, 1000)
-
-
-</script>
+ </script>
 </body>
 </html>
