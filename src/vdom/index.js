@@ -2,7 +2,7 @@ import {isReservedTag} from "../util"
 
 export function renderMixin (Vue) { // 用对象来描述dom结构
   Vue.prototype._c = function () { // 创建虚拟dom元素
-    return createElement(...arguments)
+    return createElement(this, ...arguments)
   }
   // 1.当结果是对象时 会对这个对象取值
   Vue.prototype._s = function (val) { // stringify
@@ -23,8 +23,7 @@ export function renderMixin (Vue) { // 用对象来描述dom结构
 
 
 // _c('div', {}, 1,2,3,4,5)
-function createElement (tag, data = {}, ...children) {
-  const vm = this
+function createElement (vm, tag, data = {}, ...children) {
   // 如果是组件 我产生虚拟节点时需要把组件的构造函数传入
   // new Ctor().$mount()
   // 根据tag名字 需要潘安他是不是一个组件
@@ -38,7 +37,7 @@ function createElement (tag, data = {}, ...children) {
 }
 
 function createComponent (vm, tag, data, key, children, Ctor) {
-  const baseCtor = vm.$options._base
+  const baseCtor = vm.$options._base // Vue
   if (typeof Ctor === 'object') {
     Ctor = baseCtor.extend(Ctor)
   }
@@ -47,7 +46,9 @@ function createComponent (vm, tag, data, key, children, Ctor) {
     init () {
     }
   }
-  return vnode(`vue-component-${Ctor.cid}-${tag}`, data, data.key, undefined, undefined, {Ctor, children})
+  const component = vnode(`vue-component-${Ctor.cid}-${tag}`, data, data.key, undefined, undefined, {Ctor, children})
+  console.log('component -> ', component)
+  return component
 }
 
 function createTextVnode (text) {

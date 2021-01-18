@@ -31,5 +31,5 @@ export default function initExtend (Vue) {
 * 2.内部用的是Vue.extend 就是产生一个子类来继承父类
 * 3.等会创建子类实例时候会调用父类的 _init方法，在$mount即可
 * 4.组件的初始化就是 new 这个组件的构造函数并且调用 $mount 方法
-*
+* 5.创建虚拟节点 根据标签筛出组件对应，生成组件的虚拟节点 componentOptions里面包含Ctor，children
 * */

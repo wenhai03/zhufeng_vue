@@ -148,5 +148,5 @@ function makeMap(str) {
 }
 
 export const isReservedTag = makeMap(
-  'a,div,img,image,text,span,p,button,input,textarea,select,ul,li'
+  'a,div,img,image,text,span,p,button,input,textarea,ul,li'
 )
